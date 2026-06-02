@@ -29,7 +29,7 @@
     <string name="label_encrypt_hmac_sha_256">Sign with HMAC-SHA-256</string>
     <string name="encrypt_hmac_sha_256_info">Hex signature will be included to the request headers as \"X-Signature\"</string>
     <string name="hint_sender">number or text</string>
-    <string name="hint_encrypt_hmac_sha_256_key">HMAC-SHA-512 Secret</string>
+    <string name="hint_encrypt_hmac_sha_256_key">HMAC-SHA-256 Secret</string>
     <string name="sender_recommendation">Use * symbol to catch any SMS</string>
     <string name="json_template_recommendation">Available placeholders %text%, %from%, %sentStamp%, %receivedStamp%, %sim%</string>
     <string name="error_empty_sender">Empty sender</string>

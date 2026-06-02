@@ -131,7 +131,8 @@ public class ForwardingConfigDialog {
         encryptHmacSha256CheckBox.setChecked(config.getEncryptHmacSha256());
 
         final EditText encryptHmacSha256Input = view.findViewById(R.id.id_encrypt_hmac_sha_256_key);
-        encryptHmacSha256Input.setText(String.valueOf(config.getEncryptHmacSha256Key()));
+        String encryptHmacSha256Key = config.getEncryptHmacSha256Key();
+        encryptHmacSha256Input.setText(encryptHmacSha256Key == null ? "" : encryptHmacSha256Key);
         encryptHmacSha256Input.setEnabled(encryptHmacSha256CheckBox.isChecked());
 
         encryptHmacSha256CheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {

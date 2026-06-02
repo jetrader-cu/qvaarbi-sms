@@ -97,11 +97,13 @@ public class Request {
 
     public void setSignatureHeader(@NonNull String encryptionKey, @NonNull String body) {
         String algorithm = "HmacSHA256";
-        SecretKeySpec secretKeySpec = new SecretKeySpec(encryptionKey.getBytes(), algorithm);
+        SecretKeySpec secretKeySpec =
+                new SecretKeySpec(encryptionKey.getBytes(StandardCharsets.UTF_8), algorithm);
         try {
             Mac mac = Mac.getInstance(algorithm);
             mac.init(secretKeySpec);
-            String hmac_hex = convertByteToHexadecimal(mac.doFinal(body.getBytes()));
+            String hmac_hex =
+                    convertByteToHexadecimal(mac.doFinal(body.getBytes(StandardCharsets.UTF_8)));
             this.connection.setRequestProperty("X-Signature", hmac_hex);
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
             Log.e("ForwardingConfig", Objects.requireNonNull(e.getMessage()));
