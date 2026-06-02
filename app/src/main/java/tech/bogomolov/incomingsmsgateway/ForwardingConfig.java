@@ -237,10 +237,10 @@ public class ForwardingConfig {
 
     public String prepareMessage(String from, String content, String sim, long timeStamp) {
         return this.getTemplate()
-                .replaceAll("%from%", from)
+                .replaceAll("%from%", Matcher.quoteReplacement(from))
                 .replaceAll("%sentStamp%", String.valueOf(timeStamp))
                 .replaceAll("%receivedStamp%", String.valueOf(System.currentTimeMillis()))
-                .replaceAll("%sim%", sim)
+                .replaceAll("%sim%", Matcher.quoteReplacement(sim))
                 .replaceAll("%text%",
                         Matcher.quoteReplacement(StringEscapeUtils.escapeJson(content)));
     }
