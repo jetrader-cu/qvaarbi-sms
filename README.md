@@ -99,3 +99,11 @@ $decoded = json_decode($payload, true);
 ### Misc
 
 This repository contains a stable app with minimum functionality. It is not archived, but not actively developing. If you need an app with merged PRs - try [this fork](https://github.com/scottmconway/android_income_sms_gateway_webhook)
+
+### AI usage
+
+Some of the code in this repository is written with the help of AI coding assistants.
+I use AI as a tool for writing code — implementation, tests, and boilerplate — not for
+architectural or design decisions, which I make myself. Every AI-assisted change is
+reviewed and tested by a human before it is merged, and I remain responsible for all
+code in this repository.
