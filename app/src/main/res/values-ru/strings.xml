@@ -2,7 +2,7 @@
     <string name="app_name">SMS пересылатель</string>
     <string name="permission_needed">Установите разрешение на доступ к SMS, чтобы использовать это приложение.</string>
     <string name="input_phone">66123456789</string>
-    <string name="input_url">https://example.com </string>
+    <string name="input_url">https://example.com</string>
     <string name="label_advanced">Дополнительные параметры</string>
     <string name="label_routing_params">Настройки маршрутизации</string>
     <string name="btn_add">Добавить</string>
@@ -26,9 +26,12 @@
     <string name="label_sim_slot">Sim-карта</string>
     <string name="label_ignore_ssl">Игнорировать ошибки сертификатов SSL/TLS</string>
     <string name="label_chunked_mode">Использовать Chunked transfer encoding (вместо фиксированной длины)</string>
+    <string name="label_sign_hmac_sha256">Подписать с помощью HMAC-SHA-256</string>
+    <string name="sign_hmac_sha256_info">Hex-подпись будет добавлена в заголовки запроса как \"X-Signature\"</string>
+    <string name="hint_sign_hmac_sha256_secret">Секретный ключ HMAC-SHA-256</string>
     <string name="hint_sender">число или текст</string>
     <string name="sender_recommendation">Используйте символ * для перехвата любого SMS-сообщения</string>
-    <string name="json_template_recommendation">Доступные заполнители %text%, %from%, %sentStamp%, %receivedStamp%, %sim%</string>
+    <string name="json_template_recommendation">Доступные заполнители %text%, %from%, %sentStamp%, %receivedStamp%, %sim%, %Regex=…% (извлечь из текста)</string>
     <string name="error_empty_sender">Пустой отправитель</string>
     <string name="error_empty_url">Пустой URL-адрес</string>
     <string name="error_wrong_url">Неверный URL-адрес</string>
