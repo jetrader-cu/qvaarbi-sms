@@ -234,7 +234,7 @@
         </RelativeLayout>
 
         <LinearLayout
-            android:id="@+id/id_encryption_subform"
+            android:id="@+id/id_sign_hmac_sha256_subform"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
@@ -252,11 +252,11 @@
                     android:layout_marginStart="12dp"
                     android:layout_marginLeft="12dp"
                     android:layout_marginTop="16dp"
-                    android:labelFor="@+id/id_encrypt_hmac_sha_256"
-                    android:text="@string/label_encrypt_hmac_sha_256" />
+                    android:labelFor="@+id/id_sign_hmac_sha256"
+                    android:text="@string/label_sign_hmac_sha256" />
 
                 <CheckBox
-                    android:id="@+id/id_encrypt_hmac_sha_256"
+                    android:id="@+id/id_sign_hmac_sha256"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true"
@@ -274,11 +274,11 @@
                 android:layout_marginStart="12dp"
                 android:layout_marginLeft="12dp"
                 android:layout_marginTop="-4dp"
-                android:text="@string/encrypt_hmac_sha_256_info"
+                android:text="@string/sign_hmac_sha256_info"
                 android:textSize="11sp" />
 
             <EditText
-                android:id="@+id/id_encrypt_hmac_sha_256_key"
+                android:id="@+id/id_sign_hmac_sha256_secret"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
@@ -287,7 +287,7 @@
                 android:layout_marginRight="8dp"
                 android:layout_marginBottom="4dp"
                 android:enabled="false"
-                android:hint="@string/hint_encrypt_hmac_sha_256_key"
+                android:hint="@string/hint_sign_hmac_sha256_secret"
                 android:inputType="textPassword" />
 
         </LinearLayout>

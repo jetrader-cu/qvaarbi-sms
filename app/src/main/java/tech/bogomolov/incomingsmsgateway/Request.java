@@ -23,7 +23,6 @@ import java.security.InvalidKeyException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
-import java.util.Objects;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -87,26 +86,29 @@ public class Request {
         }
     }
 
-    public String convertByteToHexadecimal(@NonNull byte[] byteArray) {
+    public static String convertByteToHexadecimal(@NonNull byte[] byteArray) {
         StringBuilder hex = new StringBuilder();
         for (byte i : byteArray) {
-            hex.append(String.format("%02X", i));
+            hex.append(String.format("%02x", i));
         }
-        return hex.toString().toLowerCase();
+        return hex.toString();
     }
 
-    public void setSignatureHeader(@NonNull String encryptionKey, @NonNull String body) {
+    public static String computeHmacSha256Hex(@NonNull String secret, @NonNull String body)
+            throws NoSuchAlgorithmException, InvalidKeyException {
         String algorithm = "HmacSHA256";
         SecretKeySpec secretKeySpec =
-                new SecretKeySpec(encryptionKey.getBytes(StandardCharsets.UTF_8), algorithm);
+                new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), algorithm);
+        Mac mac = Mac.getInstance(algorithm);
+        mac.init(secretKeySpec);
+        return convertByteToHexadecimal(mac.doFinal(body.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    public void setSignatureHeader(@NonNull String secret, @NonNull String body) {
         try {
-            Mac mac = Mac.getInstance(algorithm);
-            mac.init(secretKeySpec);
-            String hmac_hex =
-                    convertByteToHexadecimal(mac.doFinal(body.getBytes(StandardCharsets.UTF_8)));
-            this.connection.setRequestProperty("X-Signature", hmac_hex);
+            this.connection.setRequestProperty("X-Signature", computeHmacSha256Hex(secret, body));
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
-            Log.e("ForwardingConfig", Objects.requireNonNull(e.getMessage()));
+            Log.e("SmsGateway", "hmac signature error: " + e);
         }
     }
 

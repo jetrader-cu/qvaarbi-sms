@@ -16,8 +16,8 @@ public class RequestWorker extends Worker {
     public final static String DATA_IGNORE_SSL = "IGNORE_SSL";
     public final static String DATA_MAX_RETRIES = "MAX_RETRIES";
     public final static String DATA_CHUNKED_MODE = "CHUNKED_MODE";
-    public final static String DATA_ENCRYPT_HMAC_SHA_256 = "ENCRYPT_HMAC_SHA_256";
-    public final static String DATA_ENCRYPT_HMAC_SHA_256_KEY = "ENCRYPT_HMAC_SHA_256_KEY";
+    public final static String DATA_SIGN_HMAC_SHA256 = "SIGN_HMAC_SHA256";
+    public final static String DATA_SIGN_HMAC_SHA256_SECRET = "SIGN_HMAC_SHA256_SECRET";
 
     public RequestWorker(
             @NonNull Context context,
@@ -39,13 +39,13 @@ public class RequestWorker extends Worker {
         String headers = getInputData().getString(DATA_HEADERS);
         boolean ignoreSsl = getInputData().getBoolean(DATA_IGNORE_SSL, false);
         boolean useChunkedMode = getInputData().getBoolean(DATA_CHUNKED_MODE, true);
-        boolean encryptHmacSha256 = getInputData().getBoolean(DATA_ENCRYPT_HMAC_SHA_256, false);
-        String encryptHmacSha256Key = getInputData().getString(DATA_ENCRYPT_HMAC_SHA_256_KEY);
+        boolean signHmacSha256 = getInputData().getBoolean(DATA_SIGN_HMAC_SHA256, false);
+        String signHmacSha256Secret = getInputData().getString(DATA_SIGN_HMAC_SHA256_SECRET);
 
         Request request = new Request(url, text);
         request.setJsonHeaders(headers);
-        if (encryptHmacSha256) {
-            request.setSignatureHeader(Objects.requireNonNull(encryptHmacSha256Key), Objects.requireNonNull(text));
+        if (signHmacSha256) {
+            request.setSignatureHeader(Objects.requireNonNull(signHmacSha256Secret), text);
         }
 
         request.setIgnoreSsl(ignoreSsl);
