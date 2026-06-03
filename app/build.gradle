@@ -24,6 +24,12 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+    testOptions {
+        // Let unmocked android.* calls (e.g. Log.e in error paths) return defaults
+        // instead of throwing, so logic touching them stays JVM-unit-testable.
+        unitTests.returnDefaultValues = true
+    }
+
 }
 
 dependencies {

@@ -72,6 +72,44 @@ Available placeholders:
 %sentStamp%
 %receivedStamp%
 %sim%
+%Regex=...%
+
+#### Extracting part of a message with `%Regex=...%`
+
+Use `%Regex=<pattern>%` to forward only a part of the SMS body instead of the whole
+`%text%` — handy for pulling out an OTP code, a transaction amount, etc.
+
+The pattern is a standard Java regular expression applied to the message text:
+
+* If the pattern contains a capturing group `( ... )`, the content of the **first
+  group** is inserted.
+* If it has no group, the **whole match** is inserted.
+* If the pattern matches nothing, an **empty string** is inserted.
+* An invalid pattern is ignored (empty string) and never crashes forwarding.
+
+Matching is case-sensitive; prefix the pattern with `(?i)` to make it
+case-insensitive. The extracted value is JSON-escaped, so it is safe to place
+inside a JSON string. The first *unescaped* `%` ends the pattern, so to match a
+literal percent sign in the message, escape it as `\%`.
+
+Example — extract a numeric OTP code from a message like `Your code is 123456`:
+```json
+{
+     "from": "%from%",
+     "text": "%text%",
+     "code": "%Regex=code is (\\d+)%"
+}
+```
+sends `"code": "123456"`.
+
+Example with an escaped percent — extract the number before `%` from
+`Sale: 50% off`, using `%Regex=(\d+)\%%`:
+```json
+{
+     "discount": "%Regex=(\\d+)\\%%"
+}
+```
+sends `"discount": "50"`.
 
 ### Request example
 Use this curl sample request to prepare your backend code

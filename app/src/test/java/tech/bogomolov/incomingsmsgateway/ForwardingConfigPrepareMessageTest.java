@@ -115,4 +115,137 @@ public class ForwardingConfigPrepareMessageTest {
 
         assertEquals("[line1\\nline2]", result);
     }
+
+    @Test
+    public void testRegexExtractsCapturingGroup() {
+        // With a capturing group, group 1 is forwarded, not the whole match.
+        ForwardingConfig config = configWithTemplate("[%Regex=code is (\\d+)%]");
+
+        String result = config.prepareMessage("123", "Your code is 456789", "sim1", 0L);
+
+        assertEquals("[456789]", result);
+    }
+
+    @Test
+    public void testRegexWithoutGroupReturnsWholeMatch() {
+        // No capturing group -> the whole match is used (must not throw on group(1)).
+        ForwardingConfig config = configWithTemplate("[%Regex=\\d+%]");
+
+        String result = config.prepareMessage("123", "amount 4200 usd", "sim1", 0L);
+
+        assertEquals("[4200]", result);
+    }
+
+    @Test
+    public void testRegexNoMatchReturnsEmpty() {
+        ForwardingConfig config = configWithTemplate("[%Regex=(\\d+)%]");
+
+        String result = config.prepareMessage("123", "no digits here", "sim1", 0L);
+
+        assertEquals("[]", result);
+    }
+
+    @Test
+    public void testInvalidRegexDoesNotCrashAndReturnsEmpty() {
+        // An unbalanced character class is an invalid pattern; it must be ignored
+        // rather than throwing PatternSyntaxException out of prepareMessage.
+        ForwardingConfig config = configWithTemplate("[%Regex=[1-0]%]");
+
+        String result = config.prepareMessage("123", "anything 5", "sim1", 0L);
+
+        assertEquals("[]", result);
+    }
+
+    @Test
+    public void testRegexExtractedValueIsJsonEscaped() {
+        // A captured value containing a quote must be JSON-escaped so the body
+        // stays valid JSON.
+        ForwardingConfig config = configWithTemplate("\"code\":\"%Regex=is (.+)%\"");
+
+        String result = config.prepareMessage("123", "is \"x\"", "sim1", 0L);
+
+        assertEquals("\"code\":\"\\\"x\\\"\"", result);
+    }
+
+    @Test
+    public void testRegexExtractedDollarSignIsLiteral() {
+        // A '$' in the captured value must not be treated as a regex group ref.
+        ForwardingConfig config = configWithTemplate("[%Regex=amount (.+)%]");
+
+        String result = config.prepareMessage("123", "amount $100", "sim1", 0L);
+
+        assertEquals("[$100]", result);
+    }
+
+    @Test
+    public void testMultipleRegexPlaceholdersAreIndependent() {
+        // Each %Regex=...% uses its own pattern, not the first one for all.
+        ForwardingConfig config = configWithTemplate(
+                "a=%Regex=a=(\\d+)% b=%Regex=b=(\\d+)%");
+
+        String result = config.prepareMessage("123", "a=11 b=22", "sim1", 0L);
+
+        assertEquals("a=11 b=22", result);
+    }
+
+    @Test
+    public void testRegexIsCaseSensitiveByDefault() {
+        ForwardingConfig config = configWithTemplate("[%Regex=CODE (\\d+)%]");
+
+        String result = config.prepareMessage("123", "code 999", "sim1", 0L);
+
+        // Default is case-sensitive, so "CODE" does not match "code" -> empty.
+        assertEquals("[]", result);
+    }
+
+    @Test
+    public void testRegexInlineCaseInsensitiveFlag() {
+        ForwardingConfig config = configWithTemplate("[%Regex=(?i)CODE (\\d+)%]");
+
+        String result = config.prepareMessage("123", "code 999", "sim1", 0L);
+
+        assertEquals("[999]", result);
+    }
+
+    @Test
+    public void testRegexCanMatchLiteralPercentWhenEscaped() {
+        // \% is an escaped percent: it does not end the pattern and matches a
+        // literal % in the message.
+        ForwardingConfig config = configWithTemplate("[%Regex=(\\d+)\\%%]");
+
+        String result = config.prepareMessage("123", "Sale: 50% off", "sim1", 0L);
+
+        assertEquals("[50]", result);
+    }
+
+    @Test
+    public void testUnescapedPercentStillTerminatesPattern() {
+        // The first unescaped % ends the pattern, so "(\d+)" is the regex here and
+        // the following % is the closing delimiter.
+        ForwardingConfig config = configWithTemplate("[%Regex=(\\d+)%]");
+
+        String result = config.prepareMessage("123", "value 77", "sim1", 0L);
+
+        assertEquals("[77]", result);
+    }
+
+    @Test
+    public void testRegexCanMatchLiteralBackslashWhenEscaped() {
+        // \\ is an escaped backslash and matches a literal backslash in the body.
+        ForwardingConfig config = configWithTemplate("[%Regex=a(\\\\)b%]");
+
+        String result = config.prepareMessage("123", "a\\b", "sim1", 0L);
+
+        assertEquals("[\\\\]", result);
+    }
+
+    @Test
+    public void testRegexCoexistsWithTextPlaceholder() {
+        ForwardingConfig config = configWithTemplate(
+                "{\"text\":\"%text%\",\"code\":\"%Regex=(\\d+)%\"}");
+
+        String result = config.prepareMessage("123", "code 4242", "sim1", 0L);
+
+        assertEquals("{\"text\":\"code 4242\",\"code\":\"4242\"}", result);
+    }
 }

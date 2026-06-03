@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Random;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 public class ForwardingConfig {
     final private Context context;
@@ -259,14 +261,76 @@ public class ForwardingConfig {
         editor.commit();
     }
 
+    // Matches every supported placeholder in one pass. The "Regex=..." form
+    // carries a user regex that runs up to the first *unescaped* % (the closing
+    // delimiter); to include a literal % in the pattern, the user escapes it as
+    // \% — which is also how Java regex already spells a literal %, so the
+    // captured pattern can be compiled as-is. The body token is therefore either
+    // an escape pair (\ + any char) or any char that is neither % nor backslash,
+    // and the two branches don't overlap, so there is no catastrophic backtracking.
+    // Substituting all placeholders in a single pass means an inserted value
+    // (e.g. an SMS body that itself looks like "%from%") is never re-scanned.
+    private static final Pattern PLACEHOLDER = Pattern.compile(
+            "%(from|sentStamp|receivedStamp|sim|text|Regex=(?:\\\\[\\s\\S]|[^%\\\\])+)%");
+
     public String prepareMessage(String from, String content, String sim, long timeStamp) {
-        return this.getTemplate()
-                .replaceAll("%from%", Matcher.quoteReplacement(from))
-                .replaceAll("%sentStamp%", String.valueOf(timeStamp))
-                .replaceAll("%receivedStamp%", String.valueOf(System.currentTimeMillis()))
-                .replaceAll("%sim%", Matcher.quoteReplacement(sim))
-                .replaceAll("%text%",
-                        Matcher.quoteReplacement(StringEscapeUtils.escapeJson(content)));
+        Matcher matcher = PLACEHOLDER.matcher(this.getTemplate());
+        StringBuffer result = new StringBuffer();
+        while (matcher.find()) {
+            String placeholder = matcher.group(1);
+            String value;
+            switch (placeholder) {
+                case "from":
+                    value = from;
+                    break;
+                case "sentStamp":
+                    value = String.valueOf(timeStamp);
+                    break;
+                case "receivedStamp":
+                    value = String.valueOf(System.currentTimeMillis());
+                    break;
+                case "sim":
+                    value = sim;
+                    break;
+                case "text":
+                    value = StringEscapeUtils.escapeJson(content);
+                    break;
+                default:
+                    // placeholder == "Regex=<pattern>"
+                    String regex = placeholder.substring("Regex=".length());
+                    value = StringEscapeUtils.escapeJson(extractByRegex(regex, content));
+                    break;
+            }
+            // quoteReplacement guards against $ / \ in the value being treated as
+            // a regex group reference (would otherwise throw or corrupt output).
+            matcher.appendReplacement(result, Matcher.quoteReplacement(value));
+        }
+        matcher.appendTail(result);
+        return result.toString();
+    }
+
+    // Extracts a substring of the SMS body using a user-supplied regex. If the
+    // regex has a capturing group, group 1 is returned; otherwise the whole
+    // match. Returns "" on no match or an invalid regex, so a bad pattern never
+    // crashes message forwarding.
+    private String extractByRegex(String regex, String content) {
+        if (content == null || content.isEmpty()) {
+            return "";
+        }
+        try {
+            Matcher matcher = Pattern.compile(regex).matcher(content);
+            if (!matcher.find()) {
+                return "";
+            }
+            if (matcher.groupCount() >= 1) {
+                String group = matcher.group(1);
+                return group == null ? "" : group;
+            }
+            return matcher.group();
+        } catch (PatternSyntaxException e) {
+            Log.e("ForwardingConfig", "Invalid regex \"" + regex + "\": " + e.getMessage());
+            return "";
+        }
     }
 
     private static SharedPreferences getPreference(Context context) {
