@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -69,14 +70,41 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        // Failures accrue in the background, so refresh the retry counter each
+        // time the activity comes forward.
+        invalidateOptionsMenu();
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.action_bar_menu, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem retryItem = menu.findItem(R.id.action_bar_retry_failed);
+        int count = FailedMessage.getCount(this);
+        retryItem.setVisible(count > 0);
+        if (count > 0) {
+            retryItem.setTitle(getString(R.string.menu_retry_failed, count));
+        }
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
+
+        if (id == R.id.action_bar_retry_failed) {
+            int count = FailedMessage.getCount(this);
+            FailedMessage.retryAll(this);
+            Toast.makeText(this, getString(R.string.retry_failed_toast, count), Toast.LENGTH_LONG).show();
+            invalidateOptionsMenu();
+            return true;
+        }
 
         if (id == R.id.action_bar_syslogs) {
             AlertDialog.Builder builder = new AlertDialog.Builder(context);

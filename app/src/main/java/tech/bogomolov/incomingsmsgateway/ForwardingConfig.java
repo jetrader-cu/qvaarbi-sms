@@ -30,6 +30,7 @@ public class ForwardingConfig {
     private static final String KEY_IS_SMS_ENABLED = "is_sms_enabled";
     private static final String KEY_SIGN_HMAC_SHA256 = "sign_hmac_sha256";
     private static final String KEY_SIGN_HMAC_SHA256_SECRET = "sign_hmac_sha256_secret";
+    private static final String KEY_STORE_FAILED = "store_failed";
 
     private String key;
     private String sender;
@@ -43,6 +44,7 @@ public class ForwardingConfig {
     private boolean isSmsEnabled = true;
     private boolean signHmacSha256 = false;
     private String signHmacSha256Secret;
+    private boolean storeFailed = false;
 
     public ForwardingConfig(Context context) {
         this.context = context;
@@ -136,6 +138,14 @@ public class ForwardingConfig {
         this.signHmacSha256Secret = signHmacSha256Secret;
     }
 
+    public boolean getStoreFailed() {
+        return this.storeFailed;
+    }
+
+    public void setStoreFailed(boolean storeFailed) {
+        this.storeFailed = storeFailed;
+    }
+
     public boolean getIsSmsEnabled() {
         return this.isSmsEnabled;
     }
@@ -175,6 +185,7 @@ public class ForwardingConfig {
             json.put(KEY_IS_SMS_ENABLED, this.isSmsEnabled);
             json.put(KEY_SIGN_HMAC_SHA256, this.signHmacSha256);
             json.put(KEY_SIGN_HMAC_SHA256_SECRET, this.signHmacSha256Secret);
+            json.put(KEY_STORE_FAILED, this.storeFailed);
 
             SharedPreferences.Editor editor = getEditor(context);
             editor.putString(this.getKey(), json.toString());
@@ -233,11 +244,26 @@ public class ForwardingConfig {
                         config.setRetriesNumber(json.getInt(KEY_RETRIES_NUMBER));
                     }
 
+                    // Each optional field is guarded independently: a key absent in
+                    // an older stored config (or a null secret, which org.json drops
+                    // on save) must leave that one field at its default without
+                    // skipping the others.
                     try {
-                        config.setIgnoreSsl(json.getBoolean(KEY_IGNORE_SSL));
-                        config.setChunkedMode(json.getBoolean(KEY_CHUNKED_MODE));
-                        config.setSignHmacSha256(json.getBoolean(KEY_SIGN_HMAC_SHA256));
-                        config.setSignHmacSha256Secret(json.getString(KEY_SIGN_HMAC_SHA256_SECRET));
+                        if (json.has(KEY_IGNORE_SSL)) {
+                            config.setIgnoreSsl(json.getBoolean(KEY_IGNORE_SSL));
+                        }
+                        if (json.has(KEY_CHUNKED_MODE)) {
+                            config.setChunkedMode(json.getBoolean(KEY_CHUNKED_MODE));
+                        }
+                        if (json.has(KEY_SIGN_HMAC_SHA256)) {
+                            config.setSignHmacSha256(json.getBoolean(KEY_SIGN_HMAC_SHA256));
+                        }
+                        if (json.has(KEY_SIGN_HMAC_SHA256_SECRET)) {
+                            config.setSignHmacSha256Secret(json.getString(KEY_SIGN_HMAC_SHA256_SECRET));
+                        }
+                        if (json.has(KEY_STORE_FAILED)) {
+                            config.setStoreFailed(json.getBoolean(KEY_STORE_FAILED));
+                        }
                     } catch (JSONException ignored) {
                     }
                 } catch (JSONException e) {

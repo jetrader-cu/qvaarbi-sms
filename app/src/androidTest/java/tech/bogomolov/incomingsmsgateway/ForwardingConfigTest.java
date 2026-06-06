@@ -49,6 +49,7 @@ public class ForwardingConfigTest {
         config.setIgnoreSsl(true);
         config.setChunkedMode(false);
         config.setIsSmsEnabled(false);
+        config.setStoreFailed(true);
         config.save();
 
         ArrayList<ForwardingConfig> all = ForwardingConfig.getAll(context);
@@ -64,6 +65,7 @@ public class ForwardingConfigTest {
         assertTrue(loaded.getIgnoreSsl());
         assertFalse(loaded.getChunkedMode());
         assertFalse(loaded.getIsSmsEnabled());
+        assertTrue(loaded.getStoreFailed());
         assertNotNull(loaded.getKey());
     }
 
@@ -131,6 +133,34 @@ public class ForwardingConfigTest {
         ForwardingConfig loaded = ForwardingConfig.getAll(context).get(0);
         assertFalse(loaded.getIgnoreSsl());
         assertTrue(loaded.getChunkedMode());
+    }
+
+    @Test
+    public void testMissingStoreFailedDefaultsToFalse() throws Exception {
+        // Configs saved before the "store failed" feature must load with it off.
+        putRaw("key1", baseJson().toString());
+
+        ForwardingConfig loaded = ForwardingConfig.getAll(context).get(0);
+        assertFalse(loaded.getStoreFailed());
+    }
+
+    @Test
+    public void testStoreFailedSurvivesNullHmacSecret() throws Exception {
+        // store_failed is read before the (absent-when-null) HMAC secret, so it
+        // must not be reset to its default when no secret is stored.
+        ForwardingConfig config = new ForwardingConfig(context);
+        config.setSender("+16505551111");
+        config.setUrl("https://example.com");
+        config.setTemplate("{}");
+        config.setHeaders("{}");
+        config.setRetriesNumber(3);
+        config.setStoreFailed(true);
+        config.setSignHmacSha256(false);
+        config.setSignHmacSha256Secret(null);
+        config.save();
+
+        ForwardingConfig loaded = ForwardingConfig.getAll(context).get(0);
+        assertTrue(loaded.getStoreFailed());
     }
 
     @Test

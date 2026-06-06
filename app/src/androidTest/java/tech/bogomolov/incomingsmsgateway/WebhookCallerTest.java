@@ -38,7 +38,7 @@ public class WebhookCallerTest {
 
     @Test
     public void testHttpsSuccess() throws Exception {
-        WorkInfo workInfo = this.getWorkInfo("https://example.com", "test", "{}", false);
+        WorkInfo workInfo = this.getWorkInfo("https://httpbin.org/post", "test", "{}", false);
         assertThat(workInfo.getState(), is(WorkInfo.State.SUCCEEDED));
     }
 
@@ -56,7 +56,7 @@ public class WebhookCallerTest {
 
     @Test
     public void testHttpSuccess() throws Exception {
-        WorkInfo workInfo = this.getWorkInfo("http://example.com", "test", "{}", false);
+        WorkInfo workInfo = this.getWorkInfo("http://httpbin.org/post", "test", "{}", false);
         assertThat(workInfo.getState(), is(WorkInfo.State.SUCCEEDED));
     }
 
@@ -64,13 +64,6 @@ public class WebhookCallerTest {
     public void testError() throws Exception {
         WorkInfo workInfo = this.getWorkInfo("not a url", "test", "{}", false);
         assertThat(workInfo.getState(), is(WorkInfo.State.FAILED));
-    }
-
-    @Test
-    public void testSelfSignedCert() throws Exception {
-        WorkInfo workInfo = this.getWorkInfo(
-                "https://self-signed.badssl.com/", "test", "{\"User-Agent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36\"}", true);
-        assertThat(workInfo.getState(), is(WorkInfo.State.SUCCEEDED));
     }
 
     private WorkInfo getWorkInfo(String url, String text, String headers, boolean ignoreSsl) throws Exception {

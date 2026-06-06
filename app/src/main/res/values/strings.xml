@@ -26,6 +26,7 @@
     <string name="label_sim_slot">Sim Slot</string>
     <string name="label_ignore_ssl">Ignore SSL/TLS certificate errors</string>
     <string name="label_chunked_mode">Chunked Mode (vs Fixed Length)</string>
+    <string name="label_store_failed">Store failed messages for retry</string>
     <string name="label_sign_hmac_sha256">Sign with HMAC-SHA-256</string>
     <string name="sign_hmac_sha256_info">Hex signature will be included to the request headers as \"X-Signature\"</string>
     <string name="hint_sender">number or text</string>
@@ -42,4 +43,6 @@
     <string name="confirm_delete">Do you really want to delete "%s" record?</string>
     <string name="notification_channel">Default</string>
     <string name="menu_syslog">Syslog</string>
+    <string name="menu_retry_failed">Retry %d failed</string>
+    <string name="retry_failed_toast">Re-sending %d failed message(s)</string>
 </resources>

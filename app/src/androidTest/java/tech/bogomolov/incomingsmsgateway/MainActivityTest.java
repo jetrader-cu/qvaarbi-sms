@@ -1,23 +1,22 @@
 package tech.bogomolov.incomingsmsgateway;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import androidx.lifecycle.Lifecycle;
-import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.espresso.ViewInteraction;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.rule.GrantPermissionRule;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static androidx.test.espresso.Espresso.*;
+import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.*;
 import static androidx.test.espresso.assertion.ViewAssertions.*;
 import static androidx.test.espresso.matcher.ViewMatchers.*;
@@ -30,8 +29,10 @@ public class MainActivityTest {
 
     @Rule
     public ActivityScenarioRule<MainActivity> activityRule =
-            new ActivityScenarioRule(MainActivity.class);
+            new ActivityScenarioRule<>(MainActivity.class);
 
+    @Rule
+    public GrantPermissionRule permissionRule = GrantPermissionRule.grant(Manifest.permission.RECEIVE_SMS);
 
     @Before
     public void clearSharedPrefs() {
@@ -39,16 +40,9 @@ public class MainActivityTest {
                 context.getString(R.string.key_phones_preference),
                 Context.MODE_PRIVATE
         );
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.clear();
-        editor.commit();
-    }
+        sharedPreferences.edit().clear().commit();
 
-    @After
-    public void recreateActivity() {
-        ActivityScenario<MainActivity> scenario = activityRule.getScenario();
-        scenario.moveToState(Lifecycle.State.RESUMED);
-        scenario.recreate();
+        activityRule.getScenario().recreate();
     }
 
     @Test
@@ -63,7 +57,7 @@ public class MainActivityTest {
         ViewInteraction dialog = onView(withId(R.id.dialog_config_edit_form));
 
         onView(withId(R.id.input_url))
-                .perform(typeText("https://example.com"));
+                .perform(scrollTo(), typeText("https://example.com"), closeSoftKeyboard());
 
         onView(withText(R.string.btn_add)).perform(click());
 
@@ -79,7 +73,7 @@ public class MainActivityTest {
         ViewInteraction dialog = onView(withId(R.id.dialog_config_edit_form));
 
         onView(withId(R.id.input_phone))
-                .perform(typeText("test"));
+                .perform(scrollTo(), typeText("test"), closeSoftKeyboard());
 
         onView(withText(R.string.btn_add)).perform(click());
 
@@ -95,10 +89,10 @@ public class MainActivityTest {
         ViewInteraction dialog = onView(withId(R.id.dialog_config_edit_form));
 
         onView(withId(R.id.input_phone))
-                .perform(typeText("test"));
+                .perform(scrollTo(), typeText("test"));
 
         onView(withId(R.id.input_url))
-                .perform(typeText("not url"));
+                .perform(scrollTo(), typeText("not url"), closeSoftKeyboard());
 
         onView(withText(R.string.btn_add)).perform(click());
 
@@ -114,13 +108,13 @@ public class MainActivityTest {
         ViewInteraction dialog = onView(withId(R.id.dialog_config_edit_form));
 
         onView(withId(R.id.input_phone))
-                .perform(typeText("test"));
+                .perform(scrollTo(), typeText("test"));
 
         onView(withId(R.id.input_url))
-                .perform(typeText("https://example.com"));
+                .perform(scrollTo(), typeText("https://example.com"));
 
         onView(withId(R.id.input_json_template))
-                .perform(replaceText(""));
+                .perform(scrollTo(), replaceText(""), closeSoftKeyboard());
 
         onView(withText(R.string.btn_add)).perform(click());
 
@@ -136,13 +130,13 @@ public class MainActivityTest {
         ViewInteraction dialog = onView(withId(R.id.dialog_config_edit_form));
 
         onView(withId(R.id.input_phone))
-                .perform(typeText("test"));
+                .perform(scrollTo(), typeText("test"));
 
         onView(withId(R.id.input_url))
-                .perform(typeText("https://example.com"));
+                .perform(scrollTo(), typeText("https://example.com"));
 
         onView(withId(R.id.input_json_template))
-                .perform(replaceText("{"));
+                .perform(scrollTo(), replaceText("{"), closeSoftKeyboard());
 
         onView(withText(R.string.btn_add)).perform(click());
 
@@ -158,13 +152,13 @@ public class MainActivityTest {
         ViewInteraction dialog = onView(withId(R.id.dialog_config_edit_form));
 
         onView(withId(R.id.input_phone))
-                .perform(typeText("test"));
+                .perform(scrollTo(), typeText("test"));
 
         onView(withId(R.id.input_url))
-                .perform(typeText("https://example.com"));
+                .perform(scrollTo(), typeText("https://example.com"));
 
         onView(withId(R.id.input_json_headers))
-                .perform(scrollTo(), replaceText(""));
+                .perform(scrollTo(), replaceText(""), closeSoftKeyboard());
 
         onView(withText(R.string.btn_add)).perform(click());
 
@@ -180,13 +174,13 @@ public class MainActivityTest {
         ViewInteraction dialog = onView(withId(R.id.dialog_config_edit_form));
 
         onView(withId(R.id.input_phone))
-                .perform(typeText("test"));
+                .perform(scrollTo(), typeText("test"));
 
         onView(withId(R.id.input_url))
-                .perform(typeText("https://example.com"));
+                .perform(scrollTo(), typeText("https://example.com"));
 
         onView(withId(R.id.input_json_headers))
-                .perform(scrollTo(), replaceText("{"));
+                .perform(scrollTo(), replaceText("{"), closeSoftKeyboard());
 
         onView(withText(R.string.btn_add)).perform(click());
 
@@ -202,8 +196,8 @@ public class MainActivityTest {
         String url = "https://example.com";
 
         onView(withId(R.id.btn_add)).perform(click());
-        onView(withId(R.id.input_phone)).perform(typeText(sender));
-        onView(withId(R.id.input_url)).perform(typeText(url));
+        onView(withId(R.id.input_phone)).perform(scrollTo(), typeText(sender));
+        onView(withId(R.id.input_url)).perform(scrollTo(), typeText(url), closeSoftKeyboard());
 
         onView(withText(R.string.btn_add)).perform(click());
 
@@ -215,7 +209,6 @@ public class MainActivityTest {
         record.check(matches(isDisplayed()));
 
         onView(withId(R.id.dialog_config_edit_form)).check(doesNotExist());
-
 
         ViewInteraction deleteButton = onView(allOf(
                 withId(R.id.delete_button),

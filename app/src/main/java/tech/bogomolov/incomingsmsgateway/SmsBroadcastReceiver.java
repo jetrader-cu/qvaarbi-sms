@@ -6,17 +6,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.telephony.SmsMessage;
 
-import androidx.work.BackoffPolicy;
-import androidx.work.Constraints;
 import androidx.work.Data;
-import androidx.work.NetworkType;
-import androidx.work.OneTimeWorkRequest;
-import androidx.work.WorkManager;
-import androidx.work.WorkRequest;
 
 import java.util.ArrayList;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 public class SmsBroadcastReceiver extends BroadcastReceiver {
 
@@ -83,10 +76,6 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
 
         String message = config.prepareMessage(sender, content, slotName, timeStamp);
 
-        Constraints constraints = new Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.CONNECTED)
-                .build();
-
         Data data = new Data.Builder()
                 .putString(RequestWorker.DATA_URL, config.getUrl())
                 .putString(RequestWorker.DATA_TEXT, message)
@@ -96,23 +85,10 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
                 .putInt(RequestWorker.DATA_MAX_RETRIES, config.getRetriesNumber())
                 .putBoolean(RequestWorker.DATA_SIGN_HMAC_SHA256, config.getSignHmacSha256())
                 .putString(RequestWorker.DATA_SIGN_HMAC_SHA256_SECRET, config.getSignHmacSha256Secret())
+                .putBoolean(RequestWorker.DATA_STORE_FAILED, config.getStoreFailed())
                 .build();
 
-        WorkRequest workRequest =
-                new OneTimeWorkRequest.Builder(RequestWorker.class)
-                        .setConstraints(constraints)
-                        .setBackoffCriteria(
-                                BackoffPolicy.EXPONENTIAL,
-                                OneTimeWorkRequest.MIN_BACKOFF_MILLIS,
-                                TimeUnit.MILLISECONDS
-                        )
-                        .setInputData(data)
-                        .build();
-
-        WorkManager
-                .getInstance(this.context)
-                .enqueue(workRequest);
-
+        RequestWorker.enqueue(this.context, data);
     }
 
     private int detectSim(Bundle bundle) {
