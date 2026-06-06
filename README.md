@@ -24,6 +24,43 @@ Or download it from F-Droid
      alt="Get it on F-Droid"
      height="80">](https://f-droid.org/packages/tech.bogomolov.incomingsmsgateway/)
 
+## Installation FAQ
+
+### Why isn't this app on the Google Play Store?
+
+It can't be. Google Play's [SMS & Call Log permissions policy](https://support.google.com/googleplay/android-developer/answer/10208820)
+only allows the `RECEIVE_SMS` permission for a short list of approved use cases
+(such as being the device's default SMS handler). "Forward incoming SMS to a
+user-defined URL" is not one of them, so an app built around that permission is
+not eligible for the Play Store, regardless of how it's written. Please install
+from the [GitHub releases page](https://github.com/bogkonstantin/android_income_sms_gateway_webhook/releases)
+or from [F-Droid](https://f-droid.org/packages/tech.bogomolov.incomingsmsgateway/)
+instead — that is the intended, supported way to install the app.
+
+### Google Play Protect warns about, blocks, or removes the app
+
+This is a **false positive**, and it is expected. Play Protect flags the app
+because reading incoming SMS and sending their contents to a remote URL is the
+same behavior pattern used by SMS-stealing malware. Play Protect is an automated
+classifier — it cannot tell that *you* configured the destination URL and *you*
+consented, so it errs on the side of warning. The app has no backend and no
+accounts, and only ever sends SMS to the URL you enter yourself. The full source
+is in this repository, so you can verify exactly what it does.
+
+To install anyway:
+
+* On the install warning, choose **"Install anyway"** / **"More details → Install
+  anyway"**.
+* If Play Protect has already removed it, you may need to temporarily turn off
+  **Play Protect** (Play Store → profile icon → *Play Protect* → settings gear →
+  *Scan apps with Play Protect*) while you install, then re-enable it.
+* Some devices (Xiaomi/MIUI, Samsung, etc.) add their own "harmful app" prompt on
+  top of Play Protect — the same "install anyway" choice applies.
+
+If you'd rather not disable Play Protect, the F-Droid build is signed with a
+stable key whose reputation improves over time, which reduces how often the
+warning appears.
+
 ## How to use
 
 Set up App Permissions for you phone after installation. For example, enable "Autostart" if needed
