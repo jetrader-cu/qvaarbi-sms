@@ -8,8 +8,11 @@ import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
 import android.provider.Telephony;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -18,6 +21,19 @@ public class SmsReceiverService extends Service {
     BroadcastReceiver receiver;
 
     private static final String CHANNEL_ID = "SmsDefault";
+
+    // Sent by SettingsActivity after the user edits the heartbeat settings, so a
+    // running service re-reads them without a full restart (see onStartCommand).
+    public static final String ACTION_RESCHEDULE_HEARTBEAT =
+            "tech.bogomolov.incomingsmsgateway.RESCHEDULE_HEARTBEAT";
+
+    // The heartbeat runs on its own thread: hosting it in this foreground service
+    // (rather than WorkManager, whose periodic minimum is 15 min) is what lets the
+    // ping survive Doze at sub-15-min intervals, since a foreground service keeps
+    // the process out of App Standby.
+    private HandlerThread heartbeatThread;
+    private Handler heartbeatHandler;
+    private Runnable heartbeatRunnable;
 
     public SmsReceiverService() {
         receiver = new SmsBroadcastReceiver();
@@ -55,6 +71,16 @@ public class SmsReceiverService extends Service {
 
             startForeground(1, notification);
         }
+
+        startHeartbeat();
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        if (intent != null && ACTION_RESCHEDULE_HEARTBEAT.equals(intent.getAction())) {
+            startHeartbeat();
+        }
+        return START_STICKY;
     }
 
     @Override
@@ -62,9 +88,65 @@ public class SmsReceiverService extends Service {
         super.onDestroy();
 
         unregisterReceiver(receiver);
+        stopHeartbeat();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             stopForeground(true);
+        }
+    }
+
+    // Re-reads the heartbeat settings and (re)schedules the periodic ping. Safe to
+    // call repeatedly: it first tears down any existing schedule.
+    private void startHeartbeat() {
+        stopHeartbeat();
+
+        HeartbeatSettings settings = HeartbeatSettings.load(this);
+        if (!settings.isEnabled() || settings.getUrl().isEmpty()) {
+            return;
+        }
+
+        final String url = settings.getUrl();
+        final long interval = settings.getIntervalMillis();
+
+        heartbeatThread = new HandlerThread("HeartbeatThread");
+        heartbeatThread.start();
+        heartbeatHandler = new Handler(heartbeatThread.getLooper());
+
+        heartbeatRunnable = new Runnable() {
+            @Override
+            public void run() {
+                sendHeartbeat(url);
+                heartbeatHandler.postDelayed(this, interval);
+            }
+        };
+
+        // First ping after one interval — sending immediately would re-fire on every
+        // settings edit / service restart, which adds nothing for monitoring.
+        heartbeatHandler.postDelayed(heartbeatRunnable, interval);
+    }
+
+    private void stopHeartbeat() {
+        if (heartbeatHandler != null && heartbeatRunnable != null) {
+            heartbeatHandler.removeCallbacks(heartbeatRunnable);
+        }
+        if (heartbeatThread != null) {
+            heartbeatThread.quit();
+            heartbeatThread = null;
+        }
+        heartbeatHandler = null;
+        heartbeatRunnable = null;
+    }
+
+    // Runs on the heartbeat thread. Reuses Request (HttpURLConnection) with an empty
+    // body in fixed-length mode, so the ping is a plain Content-Length: 0 POST.
+    private void sendHeartbeat(String url) {
+        try {
+            Request request = new Request(url, "");
+            request.setUseChunkedMode(false);
+            String result = request.execute();
+            Log.i("SmsGateway", "heartbeat: " + result);
+        } catch (Exception e) {
+            Log.e("SmsGateway", "heartbeat error: " + e);
         }
     }
 

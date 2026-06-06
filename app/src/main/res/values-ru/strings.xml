@@ -43,6 +43,16 @@
     <string name="confirm_delete">Вы действительно хотите удалить "%s"?</string>
     <string name="notification_channel">По умолчанию</string>
     <string name="menu_syslog">Журнал</string>
+    <string name="menu_settings">Настройки</string>
+    <string name="title_settings">Настройки</string>
+    <string name="label_heartbeat_section">Мониторинг работоспособности</string>
+    <string name="heartbeat_info">Периодически отправляет запрос на URL, чтобы внешний сервис мониторинга (например, healthchecks.io, Uptime Kuma, cronitor) мог оповестить вас, если этот телефон перестанет работать и запросы прекратятся.</string>
+    <string name="label_heartbeat_enabled">Включить контрольный сигнал</string>
+    <string name="label_heartbeat_url">URL контрольного сигнала</string>
+    <string name="label_heartbeat_interval">Интервал (минуты)</string>
+    <string name="heartbeat_interval_recommendation">Меньшие значения быстрее выявляют сбои, но больше расходуют батарею и трафик.</string>
+    <string name="error_wrong_interval">Должно быть не менее 1</string>
+    <string name="heartbeat_saved_toast">Настройки сохранены</string>
     <string name="menu_retry_failed">Повторить %d неудавшихся</string>
     <string name="retry_failed_toast">Повторная отправка %d неудавшихся сообщений</string>
 </resources>

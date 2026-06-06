@@ -3,8 +3,10 @@
 This is a free, open-source Android app that automatically forwards incoming SMS messages to a specified URL as JSON via HTTP POST.
 * Forward SMS from specific numbers or all senders.
 * Retries failed requests with exponential backoff.
+* Optionally stores messages that exhaust all retries so you can re-send them later.
 * Includes sender, message, timestamp, SIM slot, and more.
 * Forward messages directly to Telegram bots or channels.
+* Optional heartbeat ping so an external monitor can alert you if the phone goes offline.
 * Built-in test message sender and error log viewer.
 * No cloud services or user registration required.
 
@@ -50,6 +52,19 @@ Press the Syslog button to view errors stored in the Logcat.
 Selecting this option will allow you to sign the request with a provided secret. The hex signature 
 is created from the request payload and the provided secret, and will be added to the request with 
 the header `X-Signature`.
+
+#### Store failed messages for retry
+This is a per-rule option in the forwarding config. When enabled, any message that exhausts all of
+its automatic retries (or fails permanently) is kept on the device instead of being dropped. The
+action bar then shows a **Retry N failed** item — tap it to re-send every stored message. Messages
+that fail again stay in the store so you can try once more later.
+
+#### Heartbeat monitoring
+Open **Settings** from the action bar to enable a periodic heartbeat. While enabled, the app POSTs to
+a URL you provide at a chosen interval (in minutes), so an external dead-man's-switch monitor (e.g.
+[healthchecks.io](https://healthchecks.io), Uptime Kuma push monitors, cronitor) can alert you if the
+phone dies, is killed, or loses connectivity and the pings stop. Lower intervals detect failures
+sooner but use more battery and data. Use the **Test** button to send one ping immediately.
 
 ### Request info
 HTTP method: POST  
