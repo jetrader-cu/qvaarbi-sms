@@ -32,7 +32,7 @@
     <string name="hint_sign_hmac_sha256_secret">Секретный ключ HMAC-SHA-256</string>
     <string name="hint_sender">число или текст</string>
     <string name="sender_recommendation">Используйте символ * для перехвата любого SMS-сообщения</string>
-    <string name="json_template_recommendation">Доступные заполнители %text%, %from%, %sentStamp%, %receivedStamp%, %sim%, %Regex=…% (извлечь из текста)</string>
+    <string name="json_template_recommendation">Доступные заполнители %text%, %from%, %sentStamp%, %receivedStamp%, %sim%, %version%, %battery%, %power%, %network%, %Regex=…% (извлечь из текста)</string>
     <string name="error_empty_sender">Пустой отправитель</string>
     <string name="error_empty_url">Пустой URL-адрес</string>
     <string name="error_wrong_url">Неверный URL-адрес</string>

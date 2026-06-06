@@ -12,9 +12,12 @@ import java.util.regex.Pattern;
  * Pure-JVM unit tests for {@link ForwardingConfig#prepareMessage}.
  * <p>
  * prepareMessage does template placeholder substitution and JSON-escaping and
- * touches no Android APIs, so it can run on the local JVM without a device.
- * The constructor stores the Context but prepareMessage never reads it, so a
- * null context is fine here.
+ * touches no Android APIs for the SMS-derived placeholders, so it can run on the
+ * local JVM without a device. The device-health placeholders (%battery%,
+ * %power%, %network%) read live state via {@link DeviceInfo}, which is
+ * null-context safe and returns fallbacks here; their real values are covered by
+ * the instrumented {@code DeviceInfoTest}. %version% comes from BuildConfig and
+ * needs no context.
  */
 public class ForwardingConfigPrepareMessageTest {
 
@@ -247,5 +250,28 @@ public class ForwardingConfigPrepareMessageTest {
         String result = config.prepareMessage("123", "code 4242", "sim1", 0L);
 
         assertEquals("{\"text\":\"code 4242\",\"code\":\"4242\"}", result);
+    }
+
+    @Test
+    public void testVersionPlaceholderUsesBuildConfig() {
+        // %version% needs no context; it always resolves to the app version name.
+        ForwardingConfig config = configWithTemplate("v=%version%");
+
+        String result = config.prepareMessage("123", "hi", "sim1", 0L);
+
+        assertEquals("v=" + BuildConfig.VERSION_NAME, result);
+    }
+
+    @Test
+    public void testDeviceHealthPlaceholdersFallBackWithoutContext() {
+        // With a null context (as in these JVM tests) DeviceInfo returns its
+        // fallbacks rather than touching Android APIs, so the placeholders still
+        // substitute to well-formed values.
+        ForwardingConfig config = configWithTemplate(
+                "battery=%battery% power=%power% network=%network%");
+
+        String result = config.prepareMessage("123", "hi", "sim1", 0L);
+
+        assertEquals("battery=-1 power=unknown network=none", result);
     }
 }

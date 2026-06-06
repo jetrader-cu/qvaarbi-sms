@@ -297,7 +297,8 @@ public class ForwardingConfig {
     // Substituting all placeholders in a single pass means an inserted value
     // (e.g. an SMS body that itself looks like "%from%") is never re-scanned.
     private static final Pattern PLACEHOLDER = Pattern.compile(
-            "%(from|sentStamp|receivedStamp|sim|text|Regex=(?:\\\\[\\s\\S]|[^%\\\\])+)%");
+            "%(from|sentStamp|receivedStamp|sim|text|version|battery|power|network"
+                    + "|Regex=(?:\\\\[\\s\\S]|[^%\\\\])+)%");
 
     public String prepareMessage(String from, String content, String sim, long timeStamp) {
         Matcher matcher = PLACEHOLDER.matcher(this.getTemplate());
@@ -320,6 +321,21 @@ public class ForwardingConfig {
                     break;
                 case "text":
                     value = StringEscapeUtils.escapeJson(content);
+                    break;
+                // Device-health data points (issue #39). These read live device
+                // state via this.context; DeviceInfo is null-context safe so a
+                // null context (unit tests) yields fallbacks rather than crashing.
+                case "version":
+                    value = DeviceInfo.getVersion();
+                    break;
+                case "battery":
+                    value = String.valueOf(DeviceInfo.getBatteryPercentage(this.context));
+                    break;
+                case "power":
+                    value = DeviceInfo.getPowerSource(this.context);
+                    break;
+                case "network":
+                    value = DeviceInfo.getNetworkType(this.context);
                     break;
                 default:
                     // placeholder == "Regex=<pattern>"

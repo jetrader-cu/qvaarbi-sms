@@ -87,7 +87,17 @@ Available placeholders:
 %sentStamp%
 %receivedStamp%
 %sim%
+%version% (app version name)
+%battery% (battery charge 0-100, or -1 if unknown)
+%power% (power source: ac / usb / wireless / unplugged / unknown)
+%network% (active network: wifi / mobile / ethernet / other / none)
 %Regex=...%
+
+The device-health placeholders `%version%`, `%battery%`, `%power%` and `%network%`
+report the phone's state at the moment the SMS is forwarded — useful for monitoring
+a fleet of devices (see issue #39). `%battery%` is a number, so use it unquoted
+(`"battery": %battery%`); the others are strings and go inside quotes. None of them
+requires an extra runtime permission.
 
 #### Extracting part of a message with `%Regex=...%`
 
