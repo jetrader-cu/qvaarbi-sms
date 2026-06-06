@@ -84,8 +84,8 @@ Sample payload:
 Available placeholders:
 %from%
 %text%
-%sentStamp%
-%receivedStamp%
+%sentStamp% (time the SMS was sent, Unix epoch in milliseconds)
+%receivedStamp% (time the SMS was received by the device, Unix epoch in milliseconds)
 %sim%
 %version% (app version name)
 %battery% (battery charge 0-100, or -1 if unknown)
@@ -98,6 +98,11 @@ report the phone's state at the moment the SMS is forwarded — useful for monit
 a fleet of devices (see issue #39). `%battery%` is a number, so use it unquoted
 (`"battery": %battery%`); the others are strings and go inside quotes. None of them
 requires an extra runtime permission.
+
+`%sentStamp%` and `%receivedStamp%` are Unix timestamps in **milliseconds** (the
+Android/Java convention), e.g. `1768556698000`, not the 10-digit seconds form. If
+your receiver expects seconds, divide by 1000 (drop the last 3 digits). They are
+plain numbers, so use them unquoted (`"sentStamp": %sentStamp%`).
 
 #### Extracting part of a message with `%Regex=...%`
 
