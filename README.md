@@ -83,6 +83,18 @@ Press the Test button to make a test request to the server.
 
 Press the Syslog button to view errors stored in the Logcat.
 
+### RCS messages are not forwarded
+
+This app forwards **SMS** only. If some messages never arrive at your URL, your
+phone may be delivering them over **RCS** (Google's chat protocol used by Google
+Messages) instead of SMS. RCS is a different transport that does not trigger the
+`SMS_RECEIVED` broadcast this app relies on, and Android provides no public API
+for third-party apps to receive RCS messages — so it cannot be supported (see
+issue #46).
+
+**Workaround:** turn off RCS in Google Messages (Settings → RCS chats → *Turn off
+RCS chats*). Messages will then arrive as normal SMS and be forwarded correctly.
+
 ### Optional Features
 
 #### Sign with HMAC-SHA-256
