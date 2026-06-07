@@ -79,6 +79,11 @@ attempt.
 If at least one Forwarding config is created and all needed permissions granted - you should see F
 icon in the status bar, means the app is listening for the SMS.
 
+On Android 13 and newer the app also asks for the notification permission. SMS forwarding works
+without it, but the F status-bar indicator only appears once it is allowed. If you don't see the
+icon, check that notifications are enabled for the app (and that the system hasn't restricted it in
+the battery settings).
+
 Press the Test button to make a test request to the server.
 
 Press the Syslog button to view errors stored in the Logcat.

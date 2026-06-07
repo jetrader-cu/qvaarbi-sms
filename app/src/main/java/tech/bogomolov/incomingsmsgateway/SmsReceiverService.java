@@ -55,10 +55,14 @@ public class SmsReceiverService extends Service {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
 
+            // IMPORTANCE_LOW keeps the "F" indicator silent (no sound, collapsed in
+            // the shade) like the original IMPORTANCE_NONE, but is not created in a
+            // blocked state — IMPORTANCE_NONE leaves the channel off on Android 13+,
+            // which greys out the user's "Allow notifications" toggle (issue #77).
             NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID,
                     getText(R.string.notification_channel),
-                    NotificationManager.IMPORTANCE_NONE);
+                    NotificationManager.IMPORTANCE_LOW);
 
             notificationManager.createNotificationChannel(channel);
 

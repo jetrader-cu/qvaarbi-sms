@@ -42,10 +42,23 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        ArrayList<String> permissions = new ArrayList<>();
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_SMS) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECEIVE_SMS}, PERMISSION_CODE);
-        } else {
+            permissions.add(Manifest.permission.RECEIVE_SMS);
+        }
+        // Android 13+ gates the foreground-service "F" indicator behind a runtime
+        // permission. Without it the service still runs and forwards SMS, but the
+        // persistent notification never shows (issue #77). Treated as best-effort:
+        // we ask for it, but its denial does not block the app like RECEIVE_SMS does.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            permissions.add(Manifest.permission.POST_NOTIFICATIONS);
+        }
+
+        if (permissions.isEmpty()) {
             showList();
+        } else {
+            ActivityCompat.requestPermissions(this, permissions.toArray(new String[0]), PERMISSION_CODE);
         }
     }
 
@@ -66,6 +79,15 @@ public class MainActivity extends AppCompatActivity {
             }
 
             return;
+        }
+
+        // RECEIVE_SMS wasn't part of this result (it was already granted, and only
+        // the best-effort POST_NOTIFICATIONS was requested), so proceed as long as
+        // RECEIVE_SMS is in fact still granted. Re-checking also handles the
+        // empty-array case Android delivers when the dialog is cancelled.
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_SMS)
+                == PackageManager.PERMISSION_GRANTED) {
+            showList();
         }
     }
 

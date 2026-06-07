@@ -3,6 +3,7 @@ package tech.bogomolov.incomingsmsgateway;
 import android.Manifest;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.espresso.ViewInteraction;
@@ -31,8 +32,17 @@ public class MainActivityTest {
     public ActivityScenarioRule<MainActivity> activityRule =
             new ActivityScenarioRule<>(MainActivity.class);
 
+    // On Android 13+ the activity also requests POST_NOTIFICATIONS (issue #77);
+    // grant it up front so no system dialog appears mid-test and blocks the UI.
     @Rule
-    public GrantPermissionRule permissionRule = GrantPermissionRule.grant(Manifest.permission.RECEIVE_SMS);
+    public GrantPermissionRule permissionRule = GrantPermissionRule.grant(permissionsToGrant());
+
+    private static String[] permissionsToGrant() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            return new String[]{Manifest.permission.RECEIVE_SMS, Manifest.permission.POST_NOTIFICATIONS};
+        }
+        return new String[]{Manifest.permission.RECEIVE_SMS};
+    }
 
     @Before
     public void clearSharedPrefs() {
