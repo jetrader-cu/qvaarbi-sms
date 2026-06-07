@@ -30,6 +30,9 @@
     <string name="label_sign_hmac_sha256">Sign with HMAC-SHA-256</string>
     <string name="sign_hmac_sha256_info">Hex signature will be included to the request headers as \"X-Signature\"</string>
     <string name="hint_sender">number or text</string>
+    <string name="hint_sms_filter">leave empty to forward all</string>
+    <string name="label_sms_filter">Text filter (regex, optional)</string>
+    <string name="sms_filter_recommendation">Forward only if the message matches this regex. E.g. OTP forwards messages containing OTP; (?s)^(?!.*OTP) forwards those that don\'t.</string>
     <string name="hint_sign_hmac_sha256_secret">HMAC-SHA-256 Secret</string>
     <string name="sender_recommendation">Use * symbol to catch any SMS</string>
     <string name="json_template_recommendation">Available placeholders %text%, %from%, %sentStamp% (ms), %receivedStamp% (ms), %sim%, %version%, %battery%, %power%, %network%, %Regex=…% (extract from text)</string>

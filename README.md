@@ -97,6 +97,24 @@ RCS chats*). Messages will then arrive as normal SMS and be forwarded correctly.
 
 ### Optional Features
 
+#### Filter by message text
+By default a rule matches on the **sender** only and forwards every SMS from it. The optional
+**Text filter (regex, optional)** field narrows this down by the message body: leave it empty to
+forward everything (the historic behaviour), or enter a Java regular expression and the rule will
+forward a message only when that expression matches the body (substring match, case-sensitive —
+prefix `(?i)` to ignore case). It combines with the sender filter, so use sender `*` to filter purely
+on content (see issue #52). A bad pattern is ignored (the message is still forwarded) so a typo never
+silently drops SMS.
+
+A single regex covers both directions:
+
+* **Forward only matching messages** — enter the keyword(s) directly. `OTP` forwards any message
+  containing "OTP"; `OTP|verification code` forwards messages containing either phrase.
+* **Forward everything *except* matching messages** — use a negative lookahead.
+  `(?s)^(?!.*OTP)` forwards every message that does **not** contain "OTP";
+  `(?si)^(?!.*(spam|promo))` excludes (case-insensitively) anything containing "spam" or "promo".
+  The leading `(?s)` makes `.` span newlines so a keyword on any line of a multi-line SMS is caught.
+
 #### Sign with HMAC-SHA-256
 Selecting this option will allow you to sign the request with a provided secret. The hex signature 
 is created from the request payload and the provided secret, and will be added to the request with 

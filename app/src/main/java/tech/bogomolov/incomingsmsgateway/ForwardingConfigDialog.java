@@ -107,6 +107,9 @@ public class ForwardingConfigDialog {
         final EditText phoneInput = view.findViewById(R.id.input_phone);
         phoneInput.setText(config.getSender());
 
+        final EditText smsFilterInput = view.findViewById(R.id.input_sms_filter);
+        smsFilterInput.setText(config.getSmsFilter());
+
         final EditText urlInput = view.findViewById(R.id.input_url);
         urlInput.setText(config.getUrl());
 
@@ -177,6 +180,9 @@ public class ForwardingConfigDialog {
             return null;
         }
 
+        final EditText smsFilterInput = view.findViewById(R.id.input_sms_filter);
+        String smsFilter = smsFilterInput.getText().toString();
+
         final EditText urlInput = view.findViewById(R.id.input_url);
         String url = urlInput.getText().toString();
         if (TextUtils.isEmpty(url)) {
@@ -235,6 +241,7 @@ public class ForwardingConfigDialog {
         String signHmacSha256Secret = signHmacSha256Input.getText().toString();
 
         config.setSender(sender);
+        config.setSmsFilter(smsFilter);
         config.setUrl(url);
         config.setTemplate(template);
         config.setHeaders(headers);

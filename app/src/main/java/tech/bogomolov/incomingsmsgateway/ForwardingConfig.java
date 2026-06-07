@@ -23,6 +23,7 @@ public class ForwardingConfig {
 
     private static final String KEY_KEY = "key";
     private static final String KEY_SENDER = "sender";
+    private static final String KEY_SMS_FILTER = "sms_filter";
     private static final String KEY_URL = "url";
     private static final String KEY_SIM_SLOT = "sim_slot";
     private static final String KEY_TEMPLATE = "template";
@@ -37,6 +38,7 @@ public class ForwardingConfig {
 
     private String key;
     private String sender;
+    private String smsFilter = ""; // empty means forward every message
     private String url;
     private int simSlot = 0; // 0 means any
     private String template;
@@ -67,6 +69,14 @@ public class ForwardingConfig {
 
     public void setSender(String sender) {
         this.sender = sender;
+    }
+
+    public String getSmsFilter() {
+        return this.smsFilter;
+    }
+
+    public void setSmsFilter(String smsFilter) {
+        this.smsFilter = smsFilter == null ? "" : smsFilter;
     }
 
     public String getUrl() {
@@ -178,6 +188,7 @@ public class ForwardingConfig {
             JSONObject json = new JSONObject();
             json.put(KEY_KEY, this.getKey());
             json.put(KEY_SENDER, this.sender);
+            json.put(KEY_SMS_FILTER, this.smsFilter);
             json.put(KEY_URL, this.url);
             json.put(KEY_SIM_SLOT, this.simSlot);
             json.put(KEY_TEMPLATE, this.template);
@@ -225,6 +236,10 @@ public class ForwardingConfig {
                         config.setSender(entry.getKey());
                     } else {
                         config.setSender(json.getString(KEY_SENDER));
+                    }
+
+                    if (json.has(KEY_SMS_FILTER)) {
+                        config.setSmsFilter(json.getString(KEY_SMS_FILTER));
                     }
 
                     if (!json.has(KEY_IS_SMS_ENABLED)) {

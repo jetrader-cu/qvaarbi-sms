@@ -104,10 +104,87 @@ public class SmsReceiverTest {
                 );
     }
 
+    @Test
+    public void testSmsPassedWhenFilterMatches() {
+        // test PDU body is "Test"
+        this.setFilterConfig(appContext.getString(R.string.asterisk), "Test");
+        SmsBroadcastReceiver receiver = this.getSmsReceiver();
+        receiver.onReceive(appContext, this.getIntent());
+
+        Mockito.verify(receiver, Mockito.times(1))
+                .callWebHook(
+                        Mockito.any(ForwardingConfig.class),
+                        Mockito.anyString(),
+                        Mockito.anyString(),
+                        Mockito.anyString(),
+                        Mockito.anyLong()
+                );
+    }
+
+    @Test
+    public void testSmsBlockedWhenFilterDoesNotMatch() {
+        this.setFilterConfig(appContext.getString(R.string.asterisk), "NoSuchWord");
+        SmsBroadcastReceiver receiver = this.getSmsReceiver();
+        receiver.onReceive(appContext, this.getIntent());
+
+        Mockito.verify(receiver, Mockito.times(0))
+                .callWebHook(
+                        Mockito.any(ForwardingConfig.class),
+                        Mockito.anyString(),
+                        Mockito.anyString(),
+                        Mockito.anyString(),
+                        Mockito.anyLong()
+                );
+    }
+
+    @Test
+    public void testSmsBlockedWhenExcludeFilterMatches() {
+        // negative lookahead excludes messages containing "Test"
+        this.setFilterConfig(appContext.getString(R.string.asterisk), "(?s)^(?!.*Test)");
+        SmsBroadcastReceiver receiver = this.getSmsReceiver();
+        receiver.onReceive(appContext, this.getIntent());
+
+        Mockito.verify(receiver, Mockito.times(0))
+                .callWebHook(
+                        Mockito.any(ForwardingConfig.class),
+                        Mockito.anyString(),
+                        Mockito.anyString(),
+                        Mockito.anyString(),
+                        Mockito.anyLong()
+                );
+    }
+
+    @Test
+    public void testSmsPassedWhenExcludeFilterDoesNotMatch() {
+        // negative lookahead excludes "Spam", which the body does not contain
+        this.setFilterConfig(appContext.getString(R.string.asterisk), "(?s)^(?!.*Spam)");
+        SmsBroadcastReceiver receiver = this.getSmsReceiver();
+        receiver.onReceive(appContext, this.getIntent());
+
+        Mockito.verify(receiver, Mockito.times(1))
+                .callWebHook(
+                        Mockito.any(ForwardingConfig.class),
+                        Mockito.anyString(),
+                        Mockito.anyString(),
+                        Mockito.anyString(),
+                        Mockito.anyLong()
+                );
+    }
+
     private void setPhoneConfig(Context context, String phone) {
         SharedPreferences.Editor editor = this.getEditor();
         editor.putString(phone, "test");
         editor.commit();
+    }
+
+    private void setFilterConfig(String sender, String filter) {
+        ForwardingConfig config = new ForwardingConfig(appContext);
+        config.setSender(sender);
+        config.setSmsFilter(filter);
+        config.setUrl("test");
+        config.setTemplate(ForwardingConfig.getDefaultJsonTemplate());
+        config.setHeaders(ForwardingConfig.getDefaultJsonHeaders());
+        config.save();
     }
 
     private SharedPreferences.Editor getEditor() {

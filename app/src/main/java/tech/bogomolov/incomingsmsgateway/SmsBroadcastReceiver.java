@@ -5,11 +5,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.telephony.SmsMessage;
+import android.util.Log;
 
 import androidx.work.Data;
 
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 public class SmsBroadcastReceiver extends BroadcastReceiver {
 
@@ -53,6 +56,10 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
                 continue;
             }
 
+            if (!matchesFilter(config.getSmsFilter(), content.toString())) {
+                continue;
+            }
+
             int slotId = this.detectSim(bundle) + 1;
             String slotName = "undetected";
             if (slotId < 0) {
@@ -89,6 +96,26 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
                 .build();
 
         RequestWorker.enqueue(this.context, data);
+    }
+
+    // Per-config content filter (issue #52). An empty filter forwards every
+    // message (the historic behaviour). A non-empty filter is a Java regex tested
+    // against the SMS body with find() (substring match): the message is forwarded
+    // only when the regex matches. The single regex covers both directions —
+    // "OTP" forwards messages that contain OTP, while a negative-lookahead such as
+    // "(?s)^(?!.*OTP)" forwards every message that does NOT contain it. An invalid
+    // pattern fails open (forwards and logs) so a typo never silently drops SMS,
+    // mirroring the "never crash forwarding" rule used by the %Regex% placeholder.
+    static boolean matchesFilter(String filter, String content) {
+        if (filter == null || filter.isEmpty()) {
+            return true;
+        }
+        try {
+            return Pattern.compile(filter).matcher(content).find();
+        } catch (PatternSyntaxException e) {
+            Log.e("SmsBroadcastReceiver", "Invalid filter regex \"" + filter + "\": " + e.getMessage());
+            return true;
+        }
     }
 
     private int detectSim(Bundle bundle) {
