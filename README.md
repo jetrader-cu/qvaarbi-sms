@@ -121,8 +121,8 @@ Sample payload:
 Available placeholders:
 %from%
 %text%
-%sentStamp% (time the SMS was sent, Unix epoch in milliseconds)
-%receivedStamp% (time the SMS was received by the device, Unix epoch in milliseconds)
+%sentStamp% (time the SMS was sent, Unix epoch in milliseconds; or %sentStamp=<format>% for a formatted date)
+%receivedStamp% (time the SMS was received by the device, Unix epoch in milliseconds; or %receivedStamp=<format>% for a formatted date)
 %sim%
 %version% (app version name)
 %battery% (battery charge 0-100, or -1 if unknown)
@@ -140,6 +140,35 @@ requires an extra runtime permission.
 Android/Java convention), e.g. `1768556698000`, not the 10-digit seconds form. If
 your receiver expects seconds, divide by 1000 (drop the last 3 digits). They are
 plain numbers, so use them unquoted (`"sentStamp": %sentStamp%`).
+
+#### Formatting the date with `%sentStamp=<format>%` / `%receivedStamp=<format>%`
+
+If your receiver can't process epoch milliseconds (e.g. a no-code webhook, a
+spreadsheet, or a chat message), append `=<format>` to either stamp to insert a
+human-readable date instead, e.g. `%sentStamp=yyyy-MM-dd HH:mm:ss%` →
+`2026-06-07 14:30:00` (see issue #42).
+
+* `<format>` is a Java [`SimpleDateFormat`](https://developer.android.com/reference/java/text/SimpleDateFormat)
+  pattern (`yyyy` year, `MM` month, `dd` day, `HH` hour, `mm` minute, `ss` second,
+  and so on). The pattern runs up to the first `%`.
+* The date is rendered in the **device's local timezone**. Unlike the bare epoch
+  form, a formatted date carries no timezone unless your pattern includes one (add
+  `XXX` for the offset, e.g. `yyyy-MM-dd'T'HH:mm:ssXXX` → `2026-06-07T14:30:00+02:00`).
+* The result is a **string**, so put it inside quotes
+  (`"sentDate": "%sentStamp=yyyy-MM-dd HH:mm:ss%"`) — unlike the bare numeric
+  `%sentStamp%`, which is used unquoted.
+* The value is JSON-escaped, and an invalid pattern is ignored (empty string) and
+  never crashes forwarding.
+
+The bare `%sentStamp%` / `%receivedStamp%` (no `=`) keep emitting epoch
+milliseconds exactly as before, and both forms can be combined in one template:
+
+```json
+{
+     "sentStamp": %sentStamp%,
+     "sentDate": "%sentStamp=yyyy-MM-dd HH:mm:ss%"
+}
+```
 
 #### Extracting part of a message with `%Regex=...%`
 

@@ -8,7 +8,10 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.regex.Matcher;
@@ -294,27 +297,46 @@ public class ForwardingConfig {
     // captured pattern can be compiled as-is. The body token is therefore either
     // an escape pair (\ + any char) or any char that is neither % nor backslash,
     // and the two branches don't overlap, so there is no catastrophic backtracking.
-    // Substituting all placeholders in a single pass means an inserted value
-    // (e.g. an SMS body that itself looks like "%from%") is never re-scanned.
+    // The "sentStamp=..." / "receivedStamp=..." forms (issue #42) carry an
+    // optional SimpleDateFormat pattern running up to the first %; without it the
+    // stamp stays bare epoch millis. Substituting all placeholders in a single
+    // pass means an inserted value (e.g. an SMS body that itself looks like
+    // "%from%") is never re-scanned.
     private static final Pattern PLACEHOLDER = Pattern.compile(
-            "%(from|sentStamp|receivedStamp|sim|text|version|battery|power|network"
+            "%(from|sentStamp(?:=[^%]+)?|receivedStamp(?:=[^%]+)?|sim|text"
+                    + "|version|battery|power|network"
                     + "|Regex=(?:\\\\[\\s\\S]|[^%\\\\])+)%");
 
     public String prepareMessage(String from, String content, String sim, long timeStamp) {
+        // Compute the receive time once so every %receivedStamp% in the template
+        // (bare or formatted) reflects the same instant.
+        long receivedStamp = System.currentTimeMillis();
         Matcher matcher = PLACEHOLDER.matcher(this.getTemplate());
         StringBuffer result = new StringBuffer();
         while (matcher.find()) {
             String placeholder = matcher.group(1);
+            // The parameterized forms ("sentStamp=<fmt>", "receivedStamp=<fmt>",
+            // "Regex=<pattern>") carry their argument after the first '='. The '='
+            // is unambiguous because no placeholder name contains one, and any
+            // later '=' (e.g. inside a regex) belongs to the argument.
+            String arg = null;
+            int eq = placeholder.indexOf('=');
+            if (eq >= 0) {
+                arg = placeholder.substring(eq + 1);
+                placeholder = placeholder.substring(0, eq);
+            }
             String value;
             switch (placeholder) {
                 case "from":
                     value = from;
                     break;
                 case "sentStamp":
-                    value = String.valueOf(timeStamp);
+                    value = arg == null ? String.valueOf(timeStamp)
+                            : StringEscapeUtils.escapeJson(formatStamp(arg, timeStamp));
                     break;
                 case "receivedStamp":
-                    value = String.valueOf(System.currentTimeMillis());
+                    value = arg == null ? String.valueOf(receivedStamp)
+                            : StringEscapeUtils.escapeJson(formatStamp(arg, receivedStamp));
                     break;
                 case "sim":
                     value = sim;
@@ -338,9 +360,8 @@ public class ForwardingConfig {
                     value = DeviceInfo.getNetworkType(this.context);
                     break;
                 default:
-                    // placeholder == "Regex=<pattern>"
-                    String regex = placeholder.substring("Regex=".length());
-                    value = StringEscapeUtils.escapeJson(extractByRegex(regex, content));
+                    // placeholder == "Regex", arg == "<pattern>"
+                    value = StringEscapeUtils.escapeJson(extractByRegex(arg, content));
                     break;
             }
             // quoteReplacement guards against $ / \ in the value being treated as
@@ -349,6 +370,20 @@ public class ForwardingConfig {
         }
         matcher.appendTail(result);
         return result.toString();
+    }
+
+    // Formats an epoch-millis timestamp with a user-supplied SimpleDateFormat
+    // pattern in the device's local timezone (issue #42). Returns "" on an
+    // invalid pattern so a bad format string never crashes message forwarding,
+    // mirroring extractByRegex.
+    private String formatStamp(String pattern, long epochMillis) {
+        try {
+            SimpleDateFormat format = new SimpleDateFormat(pattern, Locale.getDefault());
+            return format.format(new Date(epochMillis));
+        } catch (IllegalArgumentException e) {
+            Log.e("ForwardingConfig", "Invalid date format \"" + pattern + "\": " + e.getMessage());
+            return "";
+        }
     }
 
     // Extracts a substring of the SMS body using a user-supplied regex. If the

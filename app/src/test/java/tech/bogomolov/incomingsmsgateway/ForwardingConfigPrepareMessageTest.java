@@ -253,6 +253,71 @@ public class ForwardingConfigPrepareMessageTest {
     }
 
     @Test
+    public void testBareStampsAreEpochMillis() {
+        // Without "=<format>" the stamps stay bare epoch millis (unchanged).
+        ForwardingConfig config = configWithTemplate("sent=%sentStamp% recv=%receivedStamp%");
+
+        long before = System.currentTimeMillis();
+        String result = config.prepareMessage("123", "hi", "sim1", 1717761600000L);
+        long after = System.currentTimeMillis();
+
+        assertTrue(result, result.startsWith("sent=1717761600000 recv="));
+        Matcher matcher = Pattern.compile("recv=(\\d+)").matcher(result);
+        assertTrue(result, matcher.find());
+        long received = Long.parseLong(matcher.group(1));
+        assertTrue(received >= before && received <= after);
+    }
+
+    @Test
+    public void testSentStampWithFormat() throws java.text.ParseException {
+        // "=<format>" applies a SimpleDateFormat pattern to the sent time, rendered
+        // in the device's local timezone. Parsing the output back with the same
+        // pattern must yield the original instant regardless of the test machine's
+        // timezone (the offset token XXX round-trips it).
+        String pattern = "yyyy-MM-dd'T'HH:mm:ssXXX";
+        ForwardingConfig config = configWithTemplate("%sentStamp=" + pattern + "%");
+
+        // 2024-06-07 12:00:00 UTC.
+        String result = config.prepareMessage("123", "hi", "sim1", 1717761600000L);
+
+        java.text.SimpleDateFormat parser =
+                new java.text.SimpleDateFormat(pattern, java.util.Locale.US);
+        assertEquals(1717761600000L, parser.parse(result).getTime());
+    }
+
+    @Test
+    public void testReceivedStampWithFormatIsNotEpoch() {
+        ForwardingConfig config = configWithTemplate("%receivedStamp=yyyy%");
+
+        String result = config.prepareMessage("123", "hi", "sim1", 0L);
+
+        // A 4-digit year, not a 13-digit epoch-millis number.
+        assertTrue(result, result.matches("\\d{4}"));
+    }
+
+    @Test
+    public void testInvalidStampFormatDoesNotCrashAndReturnsEmpty() {
+        // An unterminated quote is an invalid SimpleDateFormat pattern; it must be
+        // ignored rather than throwing IllegalArgumentException out of the method.
+        ForwardingConfig config = configWithTemplate("[%sentStamp=yyyy'unterminated%]");
+
+        String result = config.prepareMessage("123", "hi", "sim1", 1717761600000L);
+
+        assertEquals("[]", result);
+    }
+
+    @Test
+    public void testBareAndFormattedStampsCoexist() {
+        ForwardingConfig config = configWithTemplate(
+                "epoch=%sentStamp% year=%sentStamp=yyyy%");
+
+        String result = config.prepareMessage("123", "hi", "sim1", 1717761600000L);
+
+        assertTrue(result, result.startsWith("epoch=1717761600000 year="));
+        assertTrue(result, result.matches("epoch=1717761600000 year=\\d{4}"));
+    }
+
+    @Test
     public void testVersionPlaceholderUsesBuildConfig() {
         // %version% needs no context; it always resolves to the app version name.
         ForwardingConfig config = configWithTemplate("v=%version%");
