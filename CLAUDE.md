@@ -8,7 +8,7 @@ A free, open-source Android app (`tech.bogomolov.incomingsmsgateway`) that forwa
 
 ## Build & test
 
-The project uses Gradle (wrapper committed, Gradle 7.6) and the legacy Android plugin (AGP 7.3.1, `compileSdkVersion 33`, `minSdkVersion 14`). Source is Java, not Kotlin. Gradle 7.6 does **not** support JDK 21 — build with JDK 17 (e.g. `JAVA_HOME=<jdk17> ./gradlew ...`).
+The project uses Gradle (wrapper committed, Gradle 9.4.1) and the Android plugin (AGP 9.2.1, `compileSdkVersion 33`, `minSdkVersion 14`). Source is Java, not Kotlin. AGP 9.x requires JDK 17 or newer — build with JDK 17 (e.g. `JAVA_HOME=<jdk17> ./gradlew ...`).
 
 ```bash
 ./gradlew assembleDebug        # build debug APK
