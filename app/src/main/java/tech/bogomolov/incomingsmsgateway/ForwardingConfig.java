@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.util.Log;
 
 import org.apache.commons.text.StringEscapeUtils;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -189,28 +190,36 @@ public class ForwardingConfig {
         return 10;
     }
 
+    // Serializes this config to the same JSON object used both for SharedPreferences
+    // storage and for backup export, so the two formats can never drift apart.
+    // Generates the key if absent (save() relies on getKey() being populated).
+    public JSONObject toJson() throws JSONException {
+        if (this.getKey() == null) {
+            this.setKey(this.generateKey());
+        }
+
+        JSONObject json = new JSONObject();
+        json.put(KEY_KEY, this.getKey());
+        json.put(KEY_SENDER, this.sender);
+        json.put(KEY_SMS_FILTER, this.smsFilter);
+        json.put(KEY_URL, this.url);
+        json.put(KEY_SIM_SLOT, this.simSlot);
+        json.put(KEY_TEMPLATE, this.template);
+        json.put(KEY_HEADERS, this.headers);
+        json.put(KEY_RETRIES_NUMBER, this.retriesNumber);
+        json.put(KEY_IGNORE_SSL, this.ignoreSsl);
+        json.put(KEY_CHUNKED_MODE, this.chunkedMode);
+        json.put(KEY_IS_SMS_ENABLED, this.isSmsEnabled);
+        json.put(KEY_SIGN_HMAC_SHA256, this.signHmacSha256);
+        json.put(KEY_SIGN_HMAC_SHA256_SECRET, this.signHmacSha256Secret);
+        json.put(KEY_STORE_FAILED, this.storeFailed);
+        json.put(KEY_LOCAL_MODE, this.localMode);
+        return json;
+    }
+
     public void save() {
         try {
-            if (this.getKey() == null) {
-                this.setKey(this.generateKey());
-            }
-
-            JSONObject json = new JSONObject();
-            json.put(KEY_KEY, this.getKey());
-            json.put(KEY_SENDER, this.sender);
-            json.put(KEY_SMS_FILTER, this.smsFilter);
-            json.put(KEY_URL, this.url);
-            json.put(KEY_SIM_SLOT, this.simSlot);
-            json.put(KEY_TEMPLATE, this.template);
-            json.put(KEY_HEADERS, this.headers);
-            json.put(KEY_RETRIES_NUMBER, this.retriesNumber);
-            json.put(KEY_IGNORE_SSL, this.ignoreSsl);
-            json.put(KEY_CHUNKED_MODE, this.chunkedMode);
-            json.put(KEY_IS_SMS_ENABLED, this.isSmsEnabled);
-            json.put(KEY_SIGN_HMAC_SHA256, this.signHmacSha256);
-            json.put(KEY_SIGN_HMAC_SHA256_SECRET, this.signHmacSha256Secret);
-            json.put(KEY_STORE_FAILED, this.storeFailed);
-            json.put(KEY_LOCAL_MODE, this.localMode);
+            JSONObject json = this.toJson();
 
             SharedPreferences.Editor editor = getEditor(context);
             editor.putString(this.getKey(), json.toString());
@@ -228,89 +237,124 @@ public class ForwardingConfig {
         ArrayList<ForwardingConfig> configs = new ArrayList<>();
 
         for (Map.Entry<String, ?> entry : sharedPrefs.entrySet()) {
-            ForwardingConfig config = new ForwardingConfig(context);
-            config.setSender(entry.getKey());
-
-            String value = (String) entry.getValue();
-
-            if (value.charAt(0) == '{') {
-                try {
-                    JSONObject json = new JSONObject(value);
-
-                    if (!json.has(KEY_KEY)) {
-                        config.setKey(entry.getKey());
-                    } else {
-                        config.setKey(json.getString(KEY_KEY));
-                    }
-
-                    if (!json.has(KEY_SENDER)) {
-                        config.setSender(entry.getKey());
-                    } else {
-                        config.setSender(json.getString(KEY_SENDER));
-                    }
-
-                    if (json.has(KEY_SMS_FILTER)) {
-                        config.setSmsFilter(json.getString(KEY_SMS_FILTER));
-                    }
-
-                    if (!json.has(KEY_IS_SMS_ENABLED)) {
-                        config.setIsSmsEnabled(true);
-                    } else {
-                        config.setIsSmsEnabled(json.getBoolean(KEY_IS_SMS_ENABLED));
-                    }
-
-                    if (json.has(KEY_SIM_SLOT)) {
-                        config.setSimSlot(json.getInt(KEY_SIM_SLOT));
-                    }
-
-                    config.setUrl(json.getString(KEY_URL));
-                    config.setTemplate(json.getString(KEY_TEMPLATE));
-                    config.setHeaders(json.getString(KEY_HEADERS));
-
-                    if (!json.has(KEY_RETRIES_NUMBER)) {
-                        config.setRetriesNumber(ForwardingConfig.getDefaultRetriesNumber());
-                    } else {
-                        config.setRetriesNumber(json.getInt(KEY_RETRIES_NUMBER));
-                    }
-
-                    // Each optional field is guarded independently: a key absent in
-                    // an older stored config (or a null secret, which org.json drops
-                    // on save) must leave that one field at its default without
-                    // skipping the others.
-                    try {
-                        if (json.has(KEY_IGNORE_SSL)) {
-                            config.setIgnoreSsl(json.getBoolean(KEY_IGNORE_SSL));
-                        }
-                        if (json.has(KEY_CHUNKED_MODE)) {
-                            config.setChunkedMode(json.getBoolean(KEY_CHUNKED_MODE));
-                        }
-                        if (json.has(KEY_SIGN_HMAC_SHA256)) {
-                            config.setSignHmacSha256(json.getBoolean(KEY_SIGN_HMAC_SHA256));
-                        }
-                        if (json.has(KEY_SIGN_HMAC_SHA256_SECRET)) {
-                            config.setSignHmacSha256Secret(json.getString(KEY_SIGN_HMAC_SHA256_SECRET));
-                        }
-                        if (json.has(KEY_STORE_FAILED)) {
-                            config.setStoreFailed(json.getBoolean(KEY_STORE_FAILED));
-                        }
-                        if (json.has(KEY_LOCAL_MODE)) {
-                            config.setLocalMode(json.getBoolean(KEY_LOCAL_MODE));
-                        }
-                    } catch (JSONException ignored) {
-                    }
-                } catch (JSONException e) {
-                    Log.e("ForwardingConfig", e.getMessage());
-                }
-            } else {
-                config.setUrl(value);
-                config.setTemplate(ForwardingConfig.getDefaultJsonTemplate());
-                config.setHeaders(ForwardingConfig.getDefaultJsonHeaders());
-            }
-
-            configs.add(config);
+            configs.add(fromStoredValue(context, entry.getKey(), (String) entry.getValue()));
         }
 
         return configs;
+    }
+
+    // Deserializes one stored entry into a config. Shared by getAll() (reading the
+    // SharedPreferences map) and importFromJson() (reading a backup file) so both
+    // honor the same legacy fallback and per-field defaults. fallbackKey supplies
+    // the key/sender for entries that predate those JSON fields (getAll passes the
+    // map key; import has no map key and passes null, which leaves the generated
+    // key to save()).
+    private static ForwardingConfig fromStoredValue(Context context, String fallbackKey, String value) {
+        ForwardingConfig config = new ForwardingConfig(context);
+        config.setSender(fallbackKey);
+
+        if (value.charAt(0) == '{') {
+            try {
+                JSONObject json = new JSONObject(value);
+
+                if (json.has(KEY_KEY)) {
+                    config.setKey(json.getString(KEY_KEY));
+                } else {
+                    config.setKey(fallbackKey);
+                }
+
+                if (json.has(KEY_SENDER)) {
+                    config.setSender(json.getString(KEY_SENDER));
+                } else {
+                    config.setSender(fallbackKey);
+                }
+
+                if (json.has(KEY_SMS_FILTER)) {
+                    config.setSmsFilter(json.getString(KEY_SMS_FILTER));
+                }
+
+                if (json.has(KEY_IS_SMS_ENABLED)) {
+                    config.setIsSmsEnabled(json.getBoolean(KEY_IS_SMS_ENABLED));
+                } else {
+                    config.setIsSmsEnabled(true);
+                }
+
+                if (json.has(KEY_SIM_SLOT)) {
+                    config.setSimSlot(json.getInt(KEY_SIM_SLOT));
+                }
+
+                config.setUrl(json.getString(KEY_URL));
+                config.setTemplate(json.getString(KEY_TEMPLATE));
+                config.setHeaders(json.getString(KEY_HEADERS));
+
+                if (json.has(KEY_RETRIES_NUMBER)) {
+                    config.setRetriesNumber(json.getInt(KEY_RETRIES_NUMBER));
+                } else {
+                    config.setRetriesNumber(ForwardingConfig.getDefaultRetriesNumber());
+                }
+
+                // Each optional field is guarded independently: a key absent in
+                // an older stored config (or a null secret, which org.json drops
+                // on save) must leave that one field at its default without
+                // skipping the others.
+                try {
+                    if (json.has(KEY_IGNORE_SSL)) {
+                        config.setIgnoreSsl(json.getBoolean(KEY_IGNORE_SSL));
+                    }
+                    if (json.has(KEY_CHUNKED_MODE)) {
+                        config.setChunkedMode(json.getBoolean(KEY_CHUNKED_MODE));
+                    }
+                    if (json.has(KEY_SIGN_HMAC_SHA256)) {
+                        config.setSignHmacSha256(json.getBoolean(KEY_SIGN_HMAC_SHA256));
+                    }
+                    if (json.has(KEY_SIGN_HMAC_SHA256_SECRET)) {
+                        config.setSignHmacSha256Secret(json.getString(KEY_SIGN_HMAC_SHA256_SECRET));
+                    }
+                    if (json.has(KEY_STORE_FAILED)) {
+                        config.setStoreFailed(json.getBoolean(KEY_STORE_FAILED));
+                    }
+                    if (json.has(KEY_LOCAL_MODE)) {
+                        config.setLocalMode(json.getBoolean(KEY_LOCAL_MODE));
+                    }
+                } catch (JSONException ignored) {
+                }
+            } catch (JSONException e) {
+                Log.e("ForwardingConfig", e.getMessage());
+            }
+        } else {
+            config.setUrl(value);
+            config.setTemplate(ForwardingConfig.getDefaultJsonTemplate());
+            config.setHeaders(ForwardingConfig.getDefaultJsonHeaders());
+        }
+
+        return config;
+    }
+
+    // Serializes every stored rule to a JSON array string for backup (issue #76).
+    // Scope is forwarding rules only — heartbeat settings and the stored
+    // failed-message payloads live in their own SharedPreferences files and are
+    // not touched. The output carries webhook URLs, custom headers and HMAC
+    // secrets verbatim, so callers warn the user it is sensitive.
+    public static String exportToJson(Context context) throws JSONException {
+        JSONArray array = new JSONArray();
+        for (ForwardingConfig config : getAll(context)) {
+            array.put(config.toJson());
+        }
+        return array.toString(2);
+    }
+
+    // Restores rules from a backup produced by exportToJson(). Each rule keeps its
+    // original key, so re-importing the same file overwrites the matching rule
+    // (merge) rather than duplicating it, while rules with new keys are added.
+    // Returns the number of rules imported. Throws JSONException on a malformed
+    // file so the caller can report it.
+    public static int importFromJson(Context context, String content) throws JSONException {
+        JSONArray array = new JSONArray(content);
+        for (int i = 0; i < array.length(); i++) {
+            JSONObject json = array.getJSONObject(i);
+            fromStoredValue(context, null, json.toString()).save();
+        }
+        return array.length();
     }
 
     public void remove() {

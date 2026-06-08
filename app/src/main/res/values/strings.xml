@@ -60,4 +60,14 @@
     <string name="heartbeat_saved_toast">Settings saved</string>
     <string name="menu_retry_failed">Retry %d failed</string>
     <string name="retry_failed_toast">Re-sending %d failed message(s)</string>
+    <string name="label_backup_section">Backup</string>
+    <string name="backup_info">Export your forwarding rules to a file to back them up, then import the file to restore them or move them to another device.</string>
+    <string name="btn_export">Export</string>
+    <string name="btn_import">Import</string>
+    <string name="backup_export_warning_title">Export rules</string>
+    <string name="backup_export_warning_message">The exported file contains your webhook URLs, headers and HMAC secrets in plain text. Keep it somewhere safe.</string>
+    <string name="backup_export_success">Exported %d rule(s)</string>
+    <string name="backup_export_failed">Export failed</string>
+    <string name="backup_import_success">Imported %d rule(s)</string>
+    <string name="backup_import_failed">Import failed: not a valid backup file</string>
 </resources>

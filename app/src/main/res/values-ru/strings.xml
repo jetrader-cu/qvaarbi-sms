@@ -60,4 +60,14 @@
     <string name="heartbeat_saved_toast">Настройки сохранены</string>
     <string name="menu_retry_failed">Повторить %d неудавшихся</string>
     <string name="retry_failed_toast">Повторная отправка %d неудавшихся сообщений</string>
+    <string name="label_backup_section">Резервная копия</string>
+    <string name="backup_info">Экспортируйте правила пересылки в файл для резервной копии, а затем импортируйте файл, чтобы восстановить их или перенести на другое устройство.</string>
+    <string name="btn_export">Экспорт</string>
+    <string name="btn_import">Импорт</string>
+    <string name="backup_export_warning_title">Экспорт правил</string>
+    <string name="backup_export_warning_message">Экспортированный файл содержит URL вебхуков, заголовки и секреты HMAC в открытом виде. Храните его в надёжном месте.</string>
+    <string name="backup_export_success">Экспортировано правил: %d</string>
+    <string name="backup_export_failed">Не удалось экспортировать</string>
+    <string name="backup_import_success">Импортировано правил: %d</string>
+    <string name="backup_import_failed">Не удалось импортировать: неверный файл резервной копии</string>
 </resources>

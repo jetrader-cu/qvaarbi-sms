@@ -186,6 +186,90 @@ public class ForwardingConfigTest {
         assertEquals("entryKeyAsSender", loaded.getSender());
     }
 
+    @Test
+    public void testExportImportRoundTrip() throws Exception {
+        // A rule carrying sensitive fields (secret, headers) and non-default flags
+        // must survive an export → wipe → import cycle byte-for-byte, including key.
+        ForwardingConfig config = new ForwardingConfig(context);
+        config.setSender("+16505551111");
+        config.setUrl("https://example.com/hook");
+        config.setSimSlot(2);
+        config.setTemplate("{\"text\":\"%text%\"}");
+        config.setHeaders("{\"Authorization\":\"Bearer abc\"}");
+        config.setRetriesNumber(7);
+        config.setIgnoreSsl(true);
+        config.setChunkedMode(false);
+        config.setIsSmsEnabled(false);
+        config.setSignHmacSha256(true);
+        config.setSignHmacSha256Secret("topsecret");
+        config.setStoreFailed(true);
+        config.setLocalMode(true);
+        config.save();
+        String originalKey = ForwardingConfig.getAll(context).get(0).getKey();
+
+        String exported = ForwardingConfig.exportToJson(context);
+
+        // Wipe, simulating a fresh device, then import.
+        clearSharedPrefs();
+        assertEquals(0, ForwardingConfig.getAll(context).size());
+
+        int imported = ForwardingConfig.importFromJson(context, exported);
+        assertEquals(1, imported);
+
+        ForwardingConfig loaded = ForwardingConfig.getAll(context).get(0);
+        assertEquals(originalKey, loaded.getKey());
+        assertEquals("+16505551111", loaded.getSender());
+        assertEquals("https://example.com/hook", loaded.getUrl());
+        assertEquals(2, loaded.getSimSlot());
+        assertEquals("{\"text\":\"%text%\"}", loaded.getTemplate());
+        assertEquals("{\"Authorization\":\"Bearer abc\"}", loaded.getHeaders());
+        assertEquals(7, loaded.getRetriesNumber());
+        assertTrue(loaded.getIgnoreSsl());
+        assertFalse(loaded.getChunkedMode());
+        assertFalse(loaded.getIsSmsEnabled());
+        assertTrue(loaded.getSignHmacSha256());
+        assertEquals("topsecret", loaded.getSignHmacSha256Secret());
+        assertTrue(loaded.getStoreFailed());
+        assertTrue(loaded.getLocalMode());
+    }
+
+    @Test
+    public void testImportMergesByKeyWithoutDuplicating() throws Exception {
+        ForwardingConfig config = new ForwardingConfig(context);
+        config.setSender("+16505551111");
+        config.setUrl("https://example.com");
+        config.setTemplate("{}");
+        config.setHeaders("{}");
+        config.setRetriesNumber(3);
+        config.save();
+
+        String exported = ForwardingConfig.exportToJson(context);
+
+        // Importing the same backup over the existing rule overwrites the matching
+        // key rather than producing a second copy.
+        ForwardingConfig.importFromJson(context, exported);
+        assertEquals(1, ForwardingConfig.getAll(context).size());
+    }
+
+    @Test
+    public void testImportAddsNewRulesToExisting() throws Exception {
+        // A backup with a rule whose key is absent from the device is added
+        // alongside the existing rules.
+        ForwardingConfig existing = new ForwardingConfig(context);
+        existing.setSender("+1111");
+        existing.setUrl("https://a.example");
+        existing.setTemplate("{}");
+        existing.setHeaders("{}");
+        existing.setRetriesNumber(3);
+        existing.save();
+
+        String backup = "[{\"key\":\"999_111\",\"sender\":\"+2222\","
+                + "\"url\":\"https://b.example\",\"template\":\"{}\",\"headers\":\"{}\"}]";
+        ForwardingConfig.importFromJson(context, backup);
+
+        assertEquals(2, ForwardingConfig.getAll(context).size());
+    }
+
     /** A minimal stored config that only carries the always-required fields. */
     private JSONObject baseJson() throws Exception {
         JSONObject json = new JSONObject();
