@@ -26,6 +26,7 @@ public class RequestWorker extends Worker {
     public final static String DATA_SIGN_HMAC_SHA256 = "SIGN_HMAC_SHA256";
     public final static String DATA_SIGN_HMAC_SHA256_SECRET = "SIGN_HMAC_SHA256_SECRET";
     public final static String DATA_STORE_FAILED = "STORE_FAILED";
+    public final static String DATA_LOCAL_MODE = "LOCAL_MODE";
 
     public RequestWorker(
             @NonNull Context context,
@@ -39,8 +40,14 @@ public class RequestWorker extends Worker {
      * and the manual retry path ({@link FailedMessage#retryAll}).
      */
     public static void enqueue(Context context, Data data) {
+        // "Local network mode" (issue #83): NetworkType.CONNECTED requires a
+        // *validated* internet connection, so forwarding to a LAN endpoint on a
+        // Wi-Fi without upstream internet never fires. When the config opts into
+        // local mode we drop the constraint (NOT_REQUIRED) so the request runs as
+        // soon as it is enqueued instead of waiting for internet that never comes.
+        boolean localMode = data.getBoolean(DATA_LOCAL_MODE, false);
         Constraints constraints = new Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .setRequiredNetworkType(localMode ? NetworkType.NOT_REQUIRED : NetworkType.CONNECTED)
                 .build();
 
         OneTimeWorkRequest workRequest =

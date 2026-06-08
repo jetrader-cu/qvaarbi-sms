@@ -27,6 +27,8 @@
     <string name="label_ignore_ssl">Игнорировать ошибки сертификатов SSL/TLS</string>
     <string name="label_chunked_mode">Использовать Chunked transfer encoding (вместо фиксированной длины)</string>
     <string name="label_store_failed">Сохранять неудавшиеся сообщения для повтора</string>
+    <string name="label_local_mode">Локальная сеть (без проверки интернета)</string>
+    <string name="local_mode_info">Отправлять даже без подтверждённого подключения к интернету. Включите для локального сервера (например, http://192.168.x.x) в сети Wi-Fi без доступа в интернет.</string>
     <string name="label_sign_hmac_sha256">Подписать с помощью HMAC-SHA-256</string>
     <string name="sign_hmac_sha256_info">Hex-подпись будет добавлена в заголовки запроса как \"X-Signature\"</string>
     <string name="hint_sign_hmac_sha256_secret">Секретный ключ HMAC-SHA-256</string>

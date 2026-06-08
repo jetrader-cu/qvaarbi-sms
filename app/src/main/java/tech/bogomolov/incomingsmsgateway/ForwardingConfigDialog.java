@@ -133,6 +133,9 @@ public class ForwardingConfigDialog {
         final CheckBox storeFailedCheckbox = view.findViewById(R.id.input_store_failed);
         storeFailedCheckbox.setChecked(config.getStoreFailed());
 
+        final CheckBox localModeCheckbox = view.findViewById(R.id.input_local_mode);
+        localModeCheckbox.setChecked(config.getLocalMode());
+
         final CheckBox signHmacSha256Checkbox = view.findViewById(R.id.id_sign_hmac_sha256);
         signHmacSha256Checkbox.setChecked(config.getSignHmacSha256());
 
@@ -234,6 +237,9 @@ public class ForwardingConfigDialog {
         final CheckBox storeFailedCheckbox = view.findViewById(R.id.input_store_failed);
         boolean storeFailed = storeFailedCheckbox.isChecked();
 
+        final CheckBox localModeCheckbox = view.findViewById(R.id.input_local_mode);
+        boolean localMode = localModeCheckbox.isChecked();
+
         final CheckBox signHmacSha256Checkbox = view.findViewById(R.id.id_sign_hmac_sha256);
         boolean signHmacSha256 = signHmacSha256Checkbox.isChecked();
 
@@ -249,6 +255,7 @@ public class ForwardingConfigDialog {
         config.setIgnoreSsl(ignoreSsl);
         config.setChunkedMode(chunkedMode);
         config.setStoreFailed(storeFailed);
+        config.setLocalMode(localMode);
         config.setSignHmacSha256(signHmacSha256);
         config.setSignHmacSha256Secret(signHmacSha256Secret);
 

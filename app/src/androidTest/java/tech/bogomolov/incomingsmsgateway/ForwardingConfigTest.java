@@ -50,6 +50,7 @@ public class ForwardingConfigTest {
         config.setChunkedMode(false);
         config.setIsSmsEnabled(false);
         config.setStoreFailed(true);
+        config.setLocalMode(true);
         config.save();
 
         ArrayList<ForwardingConfig> all = ForwardingConfig.getAll(context);
@@ -66,6 +67,7 @@ public class ForwardingConfigTest {
         assertFalse(loaded.getChunkedMode());
         assertFalse(loaded.getIsSmsEnabled());
         assertTrue(loaded.getStoreFailed());
+        assertTrue(loaded.getLocalMode());
         assertNotNull(loaded.getKey());
     }
 
@@ -142,6 +144,16 @@ public class ForwardingConfigTest {
 
         ForwardingConfig loaded = ForwardingConfig.getAll(context).get(0);
         assertFalse(loaded.getStoreFailed());
+    }
+
+    @Test
+    public void testMissingLocalModeDefaultsToFalse() throws Exception {
+        // Configs saved before the "local network mode" feature must load with it
+        // off, so existing rules keep the NetworkType.CONNECTED constraint.
+        putRaw("key1", baseJson().toString());
+
+        ForwardingConfig loaded = ForwardingConfig.getAll(context).get(0);
+        assertFalse(loaded.getLocalMode());
     }
 
     @Test

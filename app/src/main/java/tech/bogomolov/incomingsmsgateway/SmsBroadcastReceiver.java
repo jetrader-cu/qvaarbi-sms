@@ -93,6 +93,7 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
                 .putBoolean(RequestWorker.DATA_SIGN_HMAC_SHA256, config.getSignHmacSha256())
                 .putString(RequestWorker.DATA_SIGN_HMAC_SHA256_SECRET, config.getSignHmacSha256Secret())
                 .putBoolean(RequestWorker.DATA_STORE_FAILED, config.getStoreFailed())
+                .putBoolean(RequestWorker.DATA_LOCAL_MODE, config.getLocalMode())
                 .build();
 
         RequestWorker.enqueue(this.context, data);

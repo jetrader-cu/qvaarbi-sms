@@ -35,6 +35,7 @@ public class ForwardingConfig {
     private static final String KEY_SIGN_HMAC_SHA256 = "sign_hmac_sha256";
     private static final String KEY_SIGN_HMAC_SHA256_SECRET = "sign_hmac_sha256_secret";
     private static final String KEY_STORE_FAILED = "store_failed";
+    private static final String KEY_LOCAL_MODE = "local_mode";
 
     private String key;
     private String sender;
@@ -50,6 +51,7 @@ public class ForwardingConfig {
     private boolean signHmacSha256 = false;
     private String signHmacSha256Secret;
     private boolean storeFailed = false;
+    private boolean localMode = false; // forward without a validated internet connection
 
     public ForwardingConfig(Context context) {
         this.context = context;
@@ -159,6 +161,14 @@ public class ForwardingConfig {
         this.storeFailed = storeFailed;
     }
 
+    public boolean getLocalMode() {
+        return this.localMode;
+    }
+
+    public void setLocalMode(boolean localMode) {
+        this.localMode = localMode;
+    }
+
     public boolean getIsSmsEnabled() {
         return this.isSmsEnabled;
     }
@@ -200,6 +210,7 @@ public class ForwardingConfig {
             json.put(KEY_SIGN_HMAC_SHA256, this.signHmacSha256);
             json.put(KEY_SIGN_HMAC_SHA256_SECRET, this.signHmacSha256Secret);
             json.put(KEY_STORE_FAILED, this.storeFailed);
+            json.put(KEY_LOCAL_MODE, this.localMode);
 
             SharedPreferences.Editor editor = getEditor(context);
             editor.putString(this.getKey(), json.toString());
@@ -281,6 +292,9 @@ public class ForwardingConfig {
                         }
                         if (json.has(KEY_STORE_FAILED)) {
                             config.setStoreFailed(json.getBoolean(KEY_STORE_FAILED));
+                        }
+                        if (json.has(KEY_LOCAL_MODE)) {
+                            config.setLocalMode(json.getBoolean(KEY_LOCAL_MODE));
                         }
                     } catch (JSONException ignored) {
                     }
