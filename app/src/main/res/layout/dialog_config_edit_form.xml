@@ -52,6 +52,42 @@
             android:text="@string/sender_recommendation"
             android:textSize="10sp" />
 
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_marginStart="12dp"
+                android:layout_marginLeft="12dp"
+                android:layout_marginTop="16dp"
+                android:labelFor="@+id/input_sender_regex"
+                android:text="@string/label_sender_regex" />
+
+            <CheckBox
+                android:id="@+id/input_sender_regex"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_marginStart="12dp"
+                android:layout_marginLeft="12dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginRight="20dp" />
+
+        </RelativeLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginLeft="12dp"
+            android:layout_marginTop="-4dp"
+            android:text="@string/sender_regex_info"
+            android:textSize="10sp" />
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

@@ -24,6 +24,7 @@ public class ForwardingConfig {
 
     private static final String KEY_KEY = "key";
     private static final String KEY_SENDER = "sender";
+    private static final String KEY_IS_SENDER_REGEX = "is_sender_regex";
     private static final String KEY_SMS_FILTER = "sms_filter";
     private static final String KEY_URL = "url";
     private static final String KEY_SIM_SLOT = "sim_slot";
@@ -40,6 +41,7 @@ public class ForwardingConfig {
 
     private String key;
     private String sender;
+    private boolean isSenderRegex = false; // when true, sender is matched as a regex
     private String smsFilter = ""; // empty means forward every message
     private String url;
     private int simSlot = 0; // 0 means any
@@ -72,6 +74,14 @@ public class ForwardingConfig {
 
     public void setSender(String sender) {
         this.sender = sender;
+    }
+
+    public boolean getIsSenderRegex() {
+        return this.isSenderRegex;
+    }
+
+    public void setIsSenderRegex(boolean isSenderRegex) {
+        this.isSenderRegex = isSenderRegex;
     }
 
     public String getSmsFilter() {
@@ -201,6 +211,7 @@ public class ForwardingConfig {
         JSONObject json = new JSONObject();
         json.put(KEY_KEY, this.getKey());
         json.put(KEY_SENDER, this.sender);
+        json.put(KEY_IS_SENDER_REGEX, this.isSenderRegex);
         json.put(KEY_SMS_FILTER, this.smsFilter);
         json.put(KEY_URL, this.url);
         json.put(KEY_SIM_SLOT, this.simSlot);
@@ -315,6 +326,9 @@ public class ForwardingConfig {
                     }
                     if (json.has(KEY_LOCAL_MODE)) {
                         config.setLocalMode(json.getBoolean(KEY_LOCAL_MODE));
+                    }
+                    if (json.has(KEY_IS_SENDER_REGEX)) {
+                        config.setIsSenderRegex(json.getBoolean(KEY_IS_SENDER_REGEX));
                     }
                 } catch (JSONException ignored) {
                 }

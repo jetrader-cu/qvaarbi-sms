@@ -37,6 +37,8 @@
     <string name="sms_filter_recommendation">Forward only if the message matches this regex. E.g. OTP forwards messages containing OTP; (?s)^(?!.*OTP) forwards those that don\'t.</string>
     <string name="hint_sign_hmac_sha256_secret">HMAC-SHA-256 Secret</string>
     <string name="sender_recommendation">Use * symbol to catch any SMS</string>
+    <string name="label_sender_regex">Sender is a regular expression</string>
+    <string name="sender_regex_info">Match the sender as a regex (substring). E.g. BANK matches VM-BANK and AD-BANK. The * wildcard above still means any sender.</string>
     <string name="json_template_recommendation">Available placeholders %text%, %from%, %sentStamp% (ms), %receivedStamp% (ms), %sim%, %version%, %battery%, %power%, %network%, %Regex=…% (extract from text)</string>
     <string name="error_empty_sender">Empty sender</string>
     <string name="error_empty_url">Empty URL</string>

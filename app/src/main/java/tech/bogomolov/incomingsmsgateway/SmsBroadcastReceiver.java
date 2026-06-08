@@ -48,7 +48,7 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
         }
 
         for (ForwardingConfig config : configs) {
-            if (!sender.equals(config.getSender()) && !config.getSender().equals(asterisk)) {
+            if (!matchesSender(config, sender, asterisk)) {
                 continue;
             }
 
@@ -97,6 +97,31 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
                 .build();
 
         RequestWorker.enqueue(this.context, data);
+    }
+
+    // Per-config sender match. The asterisk wildcard always means "any sender"
+    // regardless of the regex flag. When the rule opts into regex matching (issue
+    // #88 — e.g. an Indian sender ID like AB-CTAXKR whose operator prefix rotates),
+    // the configured sender is a Java regex tested against the incoming address with
+    // find() (substring), mirroring the content filter. Unlike the content filter
+    // this fails *closed*: an invalid pattern matches nothing, so a typo cannot leak
+    // unrelated senders to the endpoint. The default (flag off) is the historic
+    // exact String.equals match, so every existing stored rule is unchanged.
+    static boolean matchesSender(ForwardingConfig config, String sender, String asterisk) {
+        String configured = config.getSender();
+        if (configured.equals(asterisk)) {
+            return true;
+        }
+        if (config.getIsSenderRegex()) {
+            try {
+                return Pattern.compile(configured).matcher(sender).find();
+            } catch (PatternSyntaxException e) {
+                Log.e("SmsBroadcastReceiver",
+                        "Invalid sender regex \"" + configured + "\": " + e.getMessage());
+                return false;
+            }
+        }
+        return sender.equals(configured);
     }
 
     // Per-config content filter (issue #52). An empty filter forwards every

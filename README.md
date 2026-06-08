@@ -1,7 +1,7 @@
 # Incoming SMS to URL forwarder
 
 This is a free, open-source Android app that automatically forwards incoming SMS messages to a specified URL as JSON via HTTP POST.
-* Forward SMS from specific numbers or all senders.
+* Forward SMS from specific numbers, all senders, or senders matching a regular expression.
 * Retries failed requests with exponential backoff.
 * Optionally stores messages that exhaust all retries so you can re-send them later.
 * Includes sender, message, timestamp, SIM slot, and more.
@@ -67,7 +67,9 @@ Set up App Permissions for you phone after installation. For example, enable "Au
 and "Display pop-up windows while running in the background" from Xiaomi devices.
 
 Set sender phone number or name and URL. It should match the number or name you see in the SMS messenger app. 
-If you want to send any SMS to URL, use * (asterisk symbol) as a name.  
+If you want to send any SMS to URL, use * (asterisk symbol) as a name. To match a family of senders
+(e.g. a fixed sender ID with a rotating operator prefix), enable **Sender is a regular expression** —
+see [Match the sender with a regex](#match-the-sender-with-a-regex) below.  
 
 Every incoming SMS will be sent immediately to the provided URL.
 If the response code is not 2XX or the request ended with a connection error, the app will try to
@@ -101,6 +103,17 @@ issue #46).
 RCS chats*). Messages will then arrive as normal SMS and be forwarded correctly.
 
 ### Optional Features
+
+#### Match the sender with a regex
+By default the **sender** is matched exactly (or use `*` to catch every sender). Tick
+**Sender is a regular expression** to instead treat the sender field as a Java regular
+expression (`java.util.regex.Pattern`, the same flavour as the text filter below). The
+expression is tested against the incoming sender as a substring match (`find()`), so it
+matches when the pattern occurs anywhere in the sender. For example `BANK` matches
+`VM-BANK` and `AD-BANK`, useful where an operator prefixes a fixed sender ID with a
+rotating code. Prefix `(?i)` to ignore case. A bad pattern matches nothing
+(fails closed), so a typo never silently forwards unrelated senders. The `*` wildcard
+keeps meaning "any sender" even with this option enabled.
 
 #### Filter by message text
 By default a rule matches on the **sender** only and forwards every SMS from it. The optional

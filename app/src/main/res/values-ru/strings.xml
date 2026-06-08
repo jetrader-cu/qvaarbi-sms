@@ -37,6 +37,8 @@
     <string name="label_sms_filter">Фильтр по тексту (regex, необязательно)</string>
     <string name="sms_filter_recommendation">Пересылать, только если сообщение соответствует этому regex. Напр., OTP пересылает сообщения, содержащие OTP; (?s)^(?!.*OTP) пересылает те, что не содержат.</string>
     <string name="sender_recommendation">Используйте символ * для перехвата любого SMS-сообщения</string>
+    <string name="label_sender_regex">Отправитель — регулярное выражение</string>
+    <string name="sender_regex_info">Сопоставлять отправителя как regex (подстрока). Напр., BANK подходит для VM-BANK и AD-BANK. Символ * выше по-прежнему означает любого отправителя.</string>
     <string name="json_template_recommendation">Доступные заполнители %text%, %from%, %sentStamp% (мс), %receivedStamp% (мс), %sim%, %version%, %battery%, %power%, %network%, %Regex=…% (извлечь из текста)</string>
     <string name="error_empty_sender">Пустой отправитель</string>
     <string name="error_empty_url">Пустой URL-адрес</string>

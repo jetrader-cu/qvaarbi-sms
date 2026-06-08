@@ -107,6 +107,9 @@ public class ForwardingConfigDialog {
         final EditText phoneInput = view.findViewById(R.id.input_phone);
         phoneInput.setText(config.getSender());
 
+        final CheckBox senderRegexCheckbox = view.findViewById(R.id.input_sender_regex);
+        senderRegexCheckbox.setChecked(config.getIsSenderRegex());
+
         final EditText smsFilterInput = view.findViewById(R.id.input_sms_filter);
         smsFilterInput.setText(config.getSmsFilter());
 
@@ -183,6 +186,9 @@ public class ForwardingConfigDialog {
             return null;
         }
 
+        final CheckBox senderRegexCheckbox = view.findViewById(R.id.input_sender_regex);
+        boolean isSenderRegex = senderRegexCheckbox.isChecked();
+
         final EditText smsFilterInput = view.findViewById(R.id.input_sms_filter);
         String smsFilter = smsFilterInput.getText().toString();
 
@@ -247,6 +253,7 @@ public class ForwardingConfigDialog {
         String signHmacSha256Secret = signHmacSha256Input.getText().toString();
 
         config.setSender(sender);
+        config.setIsSenderRegex(isSenderRegex);
         config.setSmsFilter(smsFilter);
         config.setUrl(url);
         config.setTemplate(template);
