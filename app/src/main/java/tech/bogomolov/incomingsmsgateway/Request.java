@@ -152,7 +152,10 @@ public class Request {
             if (this.useChunkedMode) {
                 this.connection.setChunkedStreamingMode(0);
             } else {
-                this.connection.setFixedLengthStreamingMode(this.payload.length());
+                // Content-Length must be the UTF-8 byte count, not the char count, or a
+                // payload with multi-byte characters gets truncated server-side.
+                this.connection.setFixedLengthStreamingMode(
+                        this.payload.getBytes(StandardCharsets.UTF_8).length);
             }
 
             OutputStream out = new BufferedOutputStream(this.connection.getOutputStream());

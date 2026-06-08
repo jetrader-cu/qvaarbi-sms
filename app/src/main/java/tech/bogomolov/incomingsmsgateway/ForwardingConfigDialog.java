@@ -61,7 +61,11 @@ public class ForwardingConfigDialog {
         retriesNumInput.setText(String.valueOf(ForwardingConfig.getDefaultRetriesNumber()));
 
         final CheckBox chunkedModeCheckbox = view.findViewById(R.id.input_chunked_mode);
-        chunkedModeCheckbox.setChecked(true);
+        // Default off: chunked request bodies (Transfer-Encoding: chunked, no Content-Length)
+        // are valid HTTP but many webhook servers — notably common PHP setups — receive them
+        // as an empty body (issue #97). Fixed-length mode sends Content-Length and works
+        // everywhere for these small payloads.
+        chunkedModeCheckbox.setChecked(false);
 
         final CheckBox signHmacSha256Checkbox = view.findViewById(R.id.id_sign_hmac_sha256);
         final EditText signHmacSha256Input = view.findViewById(R.id.id_sign_hmac_sha256_secret);
