@@ -22,6 +22,26 @@
             android:enabled="true"
             android:exported="true" />
 
+        <!--
+            SMS delivery is driven by this manifest-declared receiver, not by a
+            receiver registered at runtime inside SmsReceiverService. SMS_RECEIVED
+            is on the implicit-broadcast allowlist, so a manifest receiver still
+            fires on Android 8+ and, crucially, the system cold-starts the process
+            to deliver it even after the foreground service has been killed by an
+            aggressive OEM battery manager (issue #78). The android:permission
+            guard ensures only the system (holder of BROADCAST_SMS) can trigger it,
+            so another app cannot spoof fake SMS into the forwarder.
+        -->
+        <receiver
+            android:name=".SmsBroadcastReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.BROADCAST_SMS">
+            <intent-filter android:priority="999">
+                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+            </intent-filter>
+        </receiver>
+
         <receiver
             android:name=".BootCompletedReceiver"
             android:enabled="true"

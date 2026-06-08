@@ -4,21 +4,20 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
-import android.content.BroadcastReceiver;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
-import android.provider.Telephony;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+// Keeps the foreground "F" indicator alive and hosts the heartbeat ping. SMS
+// delivery itself is handled by the manifest-declared SmsBroadcastReceiver (see
+// AndroidManifest.xml / issue #78), so this service no longer registers an SMS
+// receiver at runtime — doing so would double-deliver every message.
 public class SmsReceiverService extends Service {
-
-    BroadcastReceiver receiver;
 
     private static final String CHANNEL_ID = "SmsDefault";
 
@@ -35,22 +34,9 @@ public class SmsReceiverService extends Service {
     private Handler heartbeatHandler;
     private Runnable heartbeatRunnable;
 
-    public SmsReceiverService() {
-        receiver = new SmsBroadcastReceiver();
-    }
-
     @Override
     public void onCreate() {
         super.onCreate();
-
-        IntentFilter filter = new IntentFilter();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            filter.addAction(Telephony.Sms.Intents.SMS_RECEIVED_ACTION);
-        } else {
-            filter.addAction("android.provider.Telephony.SMS_RECEIVED");
-        }
-
-        registerReceiver(receiver, filter);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
@@ -91,7 +77,6 @@ public class SmsReceiverService extends Service {
     public void onDestroy() {
         super.onDestroy();
 
-        unregisterReceiver(receiver);
         stopHeartbeat();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
