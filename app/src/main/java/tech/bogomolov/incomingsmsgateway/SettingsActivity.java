@@ -1,7 +1,6 @@
 package tech.bogomolov.incomingsmsgateway;
 
 import android.app.ActivityManager;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -12,12 +11,13 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 
 import org.json.JSONException;
 
@@ -55,7 +55,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         HeartbeatSettings settings = HeartbeatSettings.load(this);
 
-        final CheckBox enabledCheckbox = findViewById(R.id.input_heartbeat_enabled);
+        final SwitchCompat enabledCheckbox = findViewById(R.id.input_heartbeat_enabled);
         enabledCheckbox.setChecked(settings.isEnabled());
 
         final EditText urlInput = findViewById(R.id.input_heartbeat_url);
@@ -204,7 +204,7 @@ public class SettingsActivity extends AppCompatActivity {
     // error set) when invalid. URL/interval are only enforced when the heartbeat is
     // enabled, so a user can clear the toggle without filling a valid URL first.
     private HeartbeatSettings readSettings() {
-        final CheckBox enabledCheckbox = findViewById(R.id.input_heartbeat_enabled);
+        final SwitchCompat enabledCheckbox = findViewById(R.id.input_heartbeat_enabled);
         boolean enabled = enabledCheckbox.isChecked();
 
         final EditText urlInput = findViewById(R.id.input_heartbeat_url);

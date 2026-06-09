@@ -1,424 +1,246 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fadeScrollbars="false">
 
     <LinearLayout
         android:id="@+id/dialog_config_edit_form"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:scrollbars="vertical">
+        android:paddingStart="@dimen/spacing_medium"
+        android:paddingLeft="@dimen/spacing_medium"
+        android:paddingTop="@dimen/spacing_medium"
+        android:paddingEnd="@dimen/spacing_medium"
+        android:paddingRight="@dimen/spacing_medium"
+        android:paddingBottom="@dimen/spacing_medium">
 
         <TextView
+            style="@style/AppTheme.SectionHeader"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginLeft="12dp"
-            android:layout_marginTop="16dp"
-            android:textColor="@color/colorBlack"
-            android:textSize="16sp"
-            android:textStyle="bold"
             android:text="@string/label_routing_params" />
 
-        <TextView
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/AppTheme.TextInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginLeft="12dp"
-            android:layout_marginTop="16dp"
-            android:labelFor="@+id/input_phone"
-            android:text="@string/label_add_sender" />
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:hint="@string/label_add_sender"
+            app:helperText="@string/sender_recommendation">
 
-        <EditText
-            android:id="@+id/input_phone"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginBottom="4dp"
-            android:hint="@string/hint_sender"
-            android:inputType="text" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginLeft="12dp"
-            android:layout_marginTop="-4dp"
-            android:text="@string/sender_recommendation"
-            android:textSize="10sp" />
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <TextView
-                android:layout_width="wrap_content"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/input_phone"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_marginStart="12dp"
-                android:layout_marginLeft="12dp"
-                android:layout_marginTop="16dp"
-                android:labelFor="@+id/input_sender_regex"
-                android:text="@string/label_sender_regex" />
+                android:inputType="text" />
 
-            <CheckBox
-                android:id="@+id/input_sender_regex"
-                android:layout_width="wrap_content"
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/input_sender_regex"
+            style="@style/AppTheme.SwitchRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:text="@string/label_sender_regex" />
+
+        <TextView
+            style="@style/AppTheme.HelperText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/sender_regex_info" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/AppTheme.TextInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:hint="@string/label_sms_filter"
+            app:helperText="@string/sms_filter_recommendation">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/input_sms_filter"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:layout_marginStart="12dp"
-                android:layout_marginLeft="12dp"
-                android:layout_marginTop="12dp"
-                android:layout_marginEnd="20dp"
-                android:layout_marginRight="20dp" />
+                android:inputType="text" />
 
-        </RelativeLayout>
+        </com.google.android.material.textfield.TextInputLayout>
 
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/AppTheme.TextInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:hint="@string/label_url"
+            app:helperText="@string/input_url">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/input_url"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textUri" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Tapping the header toggles the advanced section; the chevron is set
+             from Java. -->
         <TextView
+            android:id="@+id/advanced_header"
+            style="@style/AppTheme.SectionHeader"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginLeft="12dp"
-            android:layout_marginTop="-4dp"
-            android:text="@string/sender_regex_info"
-            android:textSize="10sp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginLeft="12dp"
-            android:layout_marginTop="16dp"
-            android:labelFor="@+id/input_sms_filter"
-            android:text="@string/label_sms_filter" />
-
-        <EditText
-            android:id="@+id/input_sms_filter"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginBottom="4dp"
-            android:hint="@string/hint_sms_filter"
-            android:inputType="text" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginLeft="12dp"
-            android:layout_marginTop="-4dp"
-            android:text="@string/sms_filter_recommendation"
-            android:textSize="10sp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginLeft="12dp"
-            android:layout_marginTop="16dp"
-            android:labelFor="@+id/input_phone"
-            android:text="@string/label_url" />
-
-        <EditText
-            android:id="@+id/input_url"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginRight="8dp"
-            android:fontFamily="sans-serif"
-            android:hint="@string/input_url"
-            android:inputType="textUri" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginLeft="12dp"
-            android:layout_marginTop="18dp"
-            android:textColor="@color/colorBlack"
-            android:textSize="16sp"
-            android:textStyle="bold"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:paddingTop="@dimen/spacing_small"
+            android:paddingBottom="@dimen/spacing_small"
             android:text="@string/label_advanced" />
 
-        <TextView
-            android:id="@+id/input_sim_slot_label"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:visibility="gone"
-            android:layout_marginLeft="12dp"
-            android:layout_marginTop="16dp"
-            android:labelFor="@+id/input_sim_slot"
-            android:text="@string/label_sim_slot" />
-
-        <Spinner
-            android:id="@+id/input_sim_slot"
-            android:layout_width="fill_parent"
-            android:visibility="gone"
-            android:layout_marginStart="5dp"
-            android:layout_marginLeft="5dp"
-            android:popupTheme="@style/AppTheme.Spinner"
-            android:layout_height="wrap_content" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginStart="12dp"
-            android:layout_marginLeft="12dp"
-            android:labelFor="@+id/input_json_template"
-            android:text="@string/label_json_template" />
-
-        <EditText
-            android:id="@+id/input_json_template"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginBottom="4dp"
-            android:inputType="textMultiLine"
-            android:maxLines="10"
-            android:textSize="11sp"
-            android:typeface="monospace" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginLeft="12dp"
-            android:layout_marginTop="-4dp"
-            android:text="@string/json_template_recommendation"
-            android:textSize="11sp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginLeft="12dp"
-            android:layout_marginTop="16dp"
-            android:labelFor="@+id/input_json_headers"
-            android:text="@string/label_json_headers" />
-
-        <EditText
-            android:id="@+id/input_json_headers"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginBottom="4dp"
-            android:inputType="textMultiLine"
-            android:maxLines="5"
-            android:textSize="11sp"
-            android:typeface="monospace" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginLeft="12dp"
-            android:layout_marginTop="16dp"
-            android:labelFor="@+id/input_number_retries"
-            android:text="@string/label_number_retries" />
-
-        <EditText
-            android:id="@+id/input_number_retries"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginBottom="4dp"
-            android:inputType="number" />
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_marginStart="12dp"
-                android:layout_marginLeft="12dp"
-                android:layout_marginTop="16dp"
-                android:labelFor="@+id/input_ignore_ssl"
-                android:text="@string/label_ignore_ssl" />
-
-            <CheckBox
-                android:id="@+id/input_ignore_ssl"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:layout_marginStart="12dp"
-                android:layout_marginLeft="12dp"
-                android:layout_marginTop="12dp"
-                android:layout_marginEnd="20dp"
-                android:layout_marginRight="20dp" />
-
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_marginStart="12dp"
-                android:layout_marginLeft="12dp"
-                android:layout_marginTop="16dp"
-                android:labelFor="@+id/input_chunked_mode"
-                android:text="@string/label_chunked_mode" />
-
-            <CheckBox
-                android:id="@+id/input_chunked_mode"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:layout_marginStart="12dp"
-                android:layout_marginLeft="12dp"
-                android:layout_marginTop="12dp"
-                android:layout_marginEnd="20dp"
-                android:layout_marginRight="20dp" />
-
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_marginStart="12dp"
-                android:layout_marginLeft="12dp"
-                android:layout_marginTop="16dp"
-                android:labelFor="@+id/input_store_failed"
-                android:text="@string/label_store_failed" />
-
-            <CheckBox
-                android:id="@+id/input_store_failed"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:layout_marginStart="12dp"
-                android:layout_marginLeft="12dp"
-                android:layout_marginTop="12dp"
-                android:layout_marginEnd="20dp"
-                android:layout_marginRight="20dp" />
-
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_marginStart="12dp"
-                android:layout_marginLeft="12dp"
-                android:layout_marginTop="16dp"
-                android:labelFor="@+id/input_local_mode"
-                android:text="@string/label_local_mode" />
-
-            <CheckBox
-                android:id="@+id/input_local_mode"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:layout_marginStart="12dp"
-                android:layout_marginLeft="12dp"
-                android:layout_marginTop="12dp"
-                android:layout_marginEnd="20dp"
-                android:layout_marginRight="20dp" />
-
-        </RelativeLayout>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginLeft="12dp"
-            android:layout_marginTop="-4dp"
-            android:text="@string/local_mode_info"
-            android:textSize="11sp" />
-
         <LinearLayout
-            android:id="@+id/id_sign_hmac_sha256_subform"
-            android:layout_width="wrap_content"
+            android:id="@+id/advanced_section"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:scrollbars="vertical">
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                tools:ignore="ExtraText">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
-                    android:layout_marginStart="12dp"
-                    android:layout_marginLeft="12dp"
-                    android:layout_marginTop="16dp"
-                    android:labelFor="@+id/id_sign_hmac_sha256"
-                    android:text="@string/label_sign_hmac_sha256" />
-
-                <CheckBox
-                    android:id="@+id/id_sign_hmac_sha256"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentRight="true"
-                    android:layout_marginStart="12dp"
-                    android:layout_marginLeft="12dp"
-                    android:layout_marginTop="12dp"
-                    android:layout_marginEnd="20dp"
-                    android:layout_marginRight="20dp" />
-
-            </RelativeLayout>
+            android:visibility="gone">
 
             <TextView
+                android:id="@+id/input_sim_slot_label"
+                style="@style/AppTheme.HelperText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:layout_marginLeft="12dp"
-                android:layout_marginTop="-4dp"
-                android:text="@string/sign_hmac_sha256_info"
-                android:textSize="11sp" />
+                android:layout_marginTop="@dimen/spacing_small"
+                android:labelFor="@+id/input_sim_slot"
+                android:text="@string/label_sim_slot"
+                android:visibility="gone" />
 
-            <EditText
-                android:id="@+id/id_sign_hmac_sha256_secret"
+            <Spinner
+                android:id="@+id/input_sim_slot"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginLeft="8dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginRight="8dp"
-                android:layout_marginBottom="4dp"
-                android:enabled="false"
+                android:minHeight="48dp"
+                android:visibility="gone" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/AppTheme.TextInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_medium"
+                android:hint="@string/label_json_template"
+                app:helperText="@string/json_template_recommendation">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/input_json_template"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textMultiLine"
+                    android:maxLines="10"
+                    android:textSize="12sp"
+                    android:typeface="monospace" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/AppTheme.TextInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_medium"
+                android:hint="@string/label_json_headers">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/input_json_headers"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textMultiLine"
+                    android:maxLines="5"
+                    android:textSize="12sp"
+                    android:typeface="monospace" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/AppTheme.TextInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_medium"
+                android:hint="@string/label_number_retries">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/input_number_retries"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="number" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/input_ignore_ssl"
+                style="@style/AppTheme.SwitchRow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:text="@string/label_ignore_ssl" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/input_chunked_mode"
+                style="@style/AppTheme.SwitchRow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/label_chunked_mode" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/input_store_failed"
+                style="@style/AppTheme.SwitchRow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/label_store_failed" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/input_local_mode"
+                style="@style/AppTheme.SwitchRow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/label_local_mode" />
+
+            <TextView
+                style="@style/AppTheme.HelperText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/local_mode_info" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/id_sign_hmac_sha256"
+                style="@style/AppTheme.SwitchRow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/label_sign_hmac_sha256" />
+
+            <TextView
+                style="@style/AppTheme.HelperText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/sign_hmac_sha256_info" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/AppTheme.TextInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_medium"
                 android:hint="@string/hint_sign_hmac_sha256_secret"
-                android:inputType="textPassword" />
+                app:passwordToggleEnabled="true">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/id_sign_hmac_sha256_secret"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:enabled="false"
+                    android:inputType="textPassword" />
+
+            </com.google.android.material.textfield.TextInputLayout>
 
         </LinearLayout>
+
     </LinearLayout>
 </ScrollView>

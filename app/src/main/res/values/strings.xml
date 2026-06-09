@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Sms Forwarder</string>
     <string name="permission_needed">Set permission to access SMS to use this app.</string>
-    <string name="input_phone">66123456789</string>
+    <string name="empty_list_hint">No forwarding rules yet.\nTap + to add one.</string>
     <string name="input_url">https://example.com</string>
     <string name="label_advanced">Advanced parameters</string>
     <string name="label_routing_params">Routing parameters</string>
@@ -13,13 +13,10 @@
     <string name="btn_test">Test</string>
     <string name="btn_edit">Edit</string>
     <string name="btn_delete">Delete</string>
-    <string name="btn_on">On</string>
-    <string name="btn_off">Off</string>
     <string name="delete_record">Delete record</string>
     <string name="key_phones_preference">phones</string>
     <string name="label_add_sender">Sender (number or text)</string>
     <string name="label_number_retries">Number of retries</string>
-    <string name="label_sender">Sender</string>
     <string name="label_url">Webhook URL</string>
     <string name="label_json_template">Json Payload Template</string>
     <string name="label_json_headers">Headers</string>
@@ -31,8 +28,6 @@
     <string name="local_mode_info">Forward even without a verified internet connection. Enable for a local server (e.g. http://192.168.x.x) on Wi-Fi without internet access.</string>
     <string name="label_sign_hmac_sha256">Sign with HMAC-SHA-256</string>
     <string name="sign_hmac_sha256_info">Hex signature will be included to the request headers as \"X-Signature\"</string>
-    <string name="hint_sender">number or text</string>
-    <string name="hint_sms_filter">leave empty to forward all</string>
     <string name="label_sms_filter">Text filter (regex, optional)</string>
     <string name="sms_filter_recommendation">Forward only if the message matches this regex. E.g. OTP forwards messages containing OTP; (?s)^(?!.*OTP) forwards those that don\'t.</string>
     <string name="hint_sign_hmac_sha256_secret">HMAC-SHA-256 Secret</string>

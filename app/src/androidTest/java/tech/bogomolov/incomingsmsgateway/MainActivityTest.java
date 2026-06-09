@@ -123,6 +123,9 @@ public class MainActivityTest {
         onView(withId(R.id.input_url))
                 .perform(scrollTo(), typeText("https://example.com"));
 
+        // The advanced section is collapsed by default; expand it first.
+        onView(withId(R.id.advanced_header)).perform(scrollTo(), click());
+
         onView(withId(R.id.input_json_template))
                 .perform(scrollTo(), replaceText(""), closeSoftKeyboard());
 
@@ -144,6 +147,9 @@ public class MainActivityTest {
 
         onView(withId(R.id.input_url))
                 .perform(scrollTo(), typeText("https://example.com"));
+
+        // The advanced section is collapsed by default; expand it first.
+        onView(withId(R.id.advanced_header)).perform(scrollTo(), click());
 
         onView(withId(R.id.input_json_template))
                 .perform(scrollTo(), replaceText("{"), closeSoftKeyboard());
@@ -167,6 +173,9 @@ public class MainActivityTest {
         onView(withId(R.id.input_url))
                 .perform(scrollTo(), typeText("https://example.com"));
 
+        // The advanced section is collapsed by default; expand it first.
+        onView(withId(R.id.advanced_header)).perform(scrollTo(), click());
+
         onView(withId(R.id.input_json_headers))
                 .perform(scrollTo(), replaceText(""), closeSoftKeyboard());
 
@@ -188,6 +197,9 @@ public class MainActivityTest {
 
         onView(withId(R.id.input_url))
                 .perform(scrollTo(), typeText("https://example.com"));
+
+        // The advanced section is collapsed by default; expand it first.
+        onView(withId(R.id.advanced_header)).perform(scrollTo(), click());
 
         onView(withId(R.id.input_json_headers))
                 .perform(scrollTo(), replaceText("{"), closeSoftKeyboard());
@@ -212,6 +224,7 @@ public class MainActivityTest {
         onView(withText(R.string.btn_add)).perform(click());
 
         ViewInteraction record = onView(allOf(
+                withId(R.id.list_item),
                 hasDescendant(withText(containsString(sender))),
                 hasDescendant(withText(containsString(url))),
                 isDescendantOfA(withId(R.id.listView)))

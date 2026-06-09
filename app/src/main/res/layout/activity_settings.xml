@@ -1,4 +1,5 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fadeScrollbars="false">
@@ -7,130 +8,88 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:scrollbars="vertical">
+        android:paddingStart="@dimen/spacing_medium"
+        android:paddingLeft="@dimen/spacing_medium"
+        android:paddingTop="@dimen/spacing_medium"
+        android:paddingEnd="@dimen/spacing_medium"
+        android:paddingRight="@dimen/spacing_medium"
+        android:paddingBottom="@dimen/spacing_medium">
 
         <TextView
+            style="@style/AppTheme.SectionHeader"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginLeft="12dp"
-            android:layout_marginTop="16dp"
-            android:textColor="@color/colorBlack"
-            android:textSize="16sp"
-            android:textStyle="bold"
             android:text="@string/label_heartbeat_section" />
 
         <TextView
+            style="@style/AppTheme.HelperText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginLeft="12dp"
-            android:layout_marginEnd="12dp"
-            android:layout_marginRight="12dp"
-            android:layout_marginTop="8dp"
-            android:text="@string/heartbeat_info"
-            android:textSize="12sp" />
+            android:layout_marginTop="@dimen/spacing_small"
+            android:text="@string/heartbeat_info" />
 
-        <RelativeLayout
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/AppTheme.TextInput"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:hint="@string/label_heartbeat_url"
+            app:helperText="@string/input_url">
 
-            <TextView
-                android:layout_width="wrap_content"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/input_heartbeat_url"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_marginStart="12dp"
-                android:layout_marginLeft="12dp"
-                android:layout_marginTop="16dp"
-                android:labelFor="@+id/input_heartbeat_enabled"
-                android:text="@string/label_heartbeat_enabled" />
+                android:inputType="textUri" />
 
-            <CheckBox
-                android:id="@+id/input_heartbeat_enabled"
-                android:layout_width="wrap_content"
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/AppTheme.TextInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:hint="@string/label_heartbeat_interval"
+            app:helperText="@string/heartbeat_interval_recommendation">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/input_heartbeat_interval"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:layout_marginStart="12dp"
-                android:layout_marginLeft="12dp"
-                android:layout_marginTop="12dp"
-                android:layout_marginEnd="20dp"
-                android:layout_marginRight="20dp" />
+                android:inputType="number" />
 
-        </RelativeLayout>
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <TextView
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/input_heartbeat_enabled"
+            style="@style/AppTheme.SwitchRow"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginLeft="12dp"
-            android:layout_marginTop="16dp"
-            android:labelFor="@+id/input_heartbeat_url"
-            android:text="@string/label_heartbeat_url" />
-
-        <EditText
-            android:id="@+id/input_heartbeat_url"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginRight="8dp"
-            android:fontFamily="sans-serif"
-            android:hint="@string/input_url"
-            android:inputType="textUri" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginLeft="12dp"
-            android:layout_marginTop="16dp"
-            android:labelFor="@+id/input_heartbeat_interval"
-            android:text="@string/label_heartbeat_interval" />
-
-        <EditText
-            android:id="@+id/input_heartbeat_interval"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginRight="8dp"
-            android:inputType="number" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginLeft="12dp"
-            android:layout_marginEnd="12dp"
-            android:layout_marginRight="12dp"
-            android:layout_marginTop="-4dp"
-            android:text="@string/heartbeat_interval_recommendation"
-            android:textSize="11sp" />
+            android:layout_marginTop="@dimen/spacing_small"
+            android:text="@string/label_heartbeat_enabled" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:layout_marginBottom="@dimen/spacing_medium"
             android:gravity="end"
             android:orientation="horizontal">
 
             <Button
                 android:id="@+id/btn_heartbeat_test"
-                style="?android:attr/buttonBarButtonStyle"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/btn_test" />
 
             <Button
                 android:id="@+id/btn_heartbeat_save"
-                style="?android:attr/buttonBarButtonStyle"
+                style="@style/Widget.MaterialComponents.Button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="12dp"
-                android:layout_marginRight="12dp"
+                android:layout_marginStart="@dimen/spacing_small"
+                android:layout_marginLeft="@dimen/spacing_small"
                 android:text="@string/btn_save" />
 
         </LinearLayout>
@@ -144,56 +103,44 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:layout_marginStart="12dp"
-                android:layout_marginLeft="12dp"
-                android:layout_marginEnd="12dp"
-                android:layout_marginRight="12dp"
                 android:background="?android:attr/listDivider" />
 
             <TextView
+                style="@style/AppTheme.SectionHeader"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:layout_marginLeft="12dp"
-                android:layout_marginTop="16dp"
-                android:textColor="@color/colorBlack"
-                android:textSize="16sp"
-                android:textStyle="bold"
+                android:layout_marginTop="@dimen/spacing_medium"
                 android:text="@string/label_backup_section" />
 
             <TextView
+                style="@style/AppTheme.HelperText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:layout_marginLeft="12dp"
-                android:layout_marginEnd="12dp"
-                android:layout_marginRight="12dp"
-                android:layout_marginTop="8dp"
-                android:text="@string/backup_info"
-                android:textSize="12sp" />
+                android:layout_marginTop="@dimen/spacing_small"
+                android:text="@string/backup_info" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:layout_marginBottom="16dp"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:layout_marginBottom="@dimen/spacing_medium"
                 android:gravity="end"
                 android:orientation="horizontal">
 
                 <Button
                     android:id="@+id/btn_import"
-                    style="?android:attr/buttonBarButtonStyle"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/btn_import" />
 
                 <Button
                     android:id="@+id/btn_export"
-                    style="?android:attr/buttonBarButtonStyle"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="12dp"
-                    android:layout_marginRight="12dp"
+                    android:layout_marginStart="@dimen/spacing_small"
+                    android:layout_marginLeft="@dimen/spacing_small"
                     android:text="@string/btn_export" />
 
             </LinearLayout>

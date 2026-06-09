@@ -1,166 +1,102 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ListView ignores layout margins on item roots, so the card sits inside a
+     padded FrameLayout to get spacing between cards. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/list_item"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:paddingStart="16dp"
-    android:paddingLeft="16dp"
-    android:paddingEnd="16dp"
-    android:paddingRight="16dp"
-    android:paddingBottom="8dp"
-    tools:ignore="RtlSymmetry">
+    android:paddingStart="@dimen/spacing_medium"
+    android:paddingLeft="@dimen/spacing_medium"
+    android:paddingTop="6dp"
+    android:paddingEnd="@dimen/spacing_medium"
+    android:paddingRight="@dimen/spacing_medium"
+    android:paddingBottom="6dp">
 
-    <LinearLayout
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        >
+        app:cardBackgroundColor="@color/colorSurface"
+        app:cardCornerRadius="@dimen/card_corner_radius"
+        app:cardElevation="1dp">
 
         <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
-            >
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/label_sender"
-                android:textSize="12sp" />
-
-            <TextView
-                android:id="@+id/text_sender"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="#000"
-                android:textSize="18sp"
-                tools:ignore="RtlSymmetry" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical">
+            android:paddingStart="@dimen/spacing_medium"
+            android:paddingLeft="@dimen/spacing_medium"
+            android:paddingTop="@dimen/spacing_medium"
+            android:paddingEnd="@dimen/spacing_medium"
+            android:paddingRight="@dimen/spacing_medium"
+            android:paddingBottom="@dimen/spacing_small">
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="end"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
                 android:orientation="horizontal">
 
                 <TextView
-                    android:id="@+id/text_sms_on_off"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:text="@string/btn_on"
-                    android:textColor="#000"
-                    android:textSize="14sp"
-                    tools:ignore="RtlSymmetry" />
+                    android:id="@+id/text_sender"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textColor="?android:attr/textColorPrimary"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
 
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_sms_on_off"
                     android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:checked="true"
-                    android:switchMinWidth="56dp" />
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_small"
+                    android:layout_marginLeft="@dimen/spacing_small"
+                    android:checked="true" />
+
             </LinearLayout>
+
+            <TextView
+                android:id="@+id/text_url"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:ellipsize="middle"
+                android:maxLines="1"
+                android:textColor="?android:attr/textColorSecondary"
+                android:textSize="13sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:gravity="end"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/edit_button"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minHeight="36dp"
+                    android:text="@string/btn_edit"
+                    android:textColor="?attr/colorAccent" />
+
+                <Button
+                    android:id="@+id/delete_button"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minHeight="36dp"
+                    android:text="@string/btn_delete"
+                    android:textColor="@color/colorDanger" />
+
+            </LinearLayout>
+
         </LinearLayout>
 
-    </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="0dp"
-        android:text="@string/label_url"
-        android:textSize="12sp" />
-
-    <TextView
-        android:id="@+id/text_url"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textColor="#000"
-        android:textSize="18sp"
-        tools:ignore="RtlSymmetry" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="0dp"
-        android:text="@string/label_json_template"
-        android:textSize="12sp" />
-
-    <TextView
-        android:id="@+id/text_template"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textColor="#000"
-        android:textSize="11sp"
-        android:typeface="monospace"
-        tools:ignore="RtlSymmetry" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="0dp"
-        android:text="@string/label_json_headers"
-        android:textSize="12sp" />
-
-    <TextView
-        android:id="@+id/text_headers"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textColor="#000"
-        android:textSize="11sp"
-        android:typeface="monospace"
-        tools:ignore="RtlSymmetry" />
-
-    <RelativeLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        tools:ignore="RtlSymmetry">
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/edit_button"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
-                android:height="10dp"
-                android:minHeight="32dp"
-                android:text="@string/btn_edit"
-                android:textAllCaps="true"
-                android:textColor="@color/colorPrimary"
-                android:textSize="14sp" />
-
-            <Button
-                android:id="@+id/delete_button"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
-                android:height="10dp"
-                android:minHeight="32dp"
-                android:text="@string/btn_delete"
-                android:textAllCaps="true"
-                android:textColor="@color/colorDanger"
-                android:textSize="14sp" />
-
-        </LinearLayout>
-    </RelativeLayout>
-</LinearLayout>
+</FrameLayout>

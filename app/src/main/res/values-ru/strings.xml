@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">SMS пересылатель</string>
     <string name="permission_needed">Установите разрешение на доступ к SMS, чтобы использовать это приложение.</string>
-    <string name="input_phone">66123456789</string>
+    <string name="empty_list_hint">Пока нет правил пересылки.\nНажмите +, чтобы добавить.</string>
     <string name="input_url">https://example.com</string>
     <string name="label_advanced">Дополнительные параметры</string>
     <string name="label_routing_params">Настройки маршрутизации</string>
@@ -13,13 +13,10 @@
     <string name="btn_test">Протестировать</string>
     <string name="btn_edit">Изменить</string>
     <string name="btn_delete">Удалить</string>
-    <string name="btn_on">Включить</string>
-    <string name="btn_off">Выключить</string>
     <string name="delete_record">Удалить запись</string>
     <string name="key_phones_preference">телефоны</string>
     <string name="label_add_sender">Отправитель (номер или текст)</string>
     <string name="label_number_retries">Количество повторных попыток</string>
-    <string name="label_sender">Отправитель</string>
     <string name="label_url">URL</string>
     <string name="label_json_template">Шаблон отправляемого JSON</string>
     <string name="label_json_headers">Заголовки</string>
@@ -32,8 +29,6 @@
     <string name="label_sign_hmac_sha256">Подписать с помощью HMAC-SHA-256</string>
     <string name="sign_hmac_sha256_info">Hex-подпись будет добавлена в заголовки запроса как \"X-Signature\"</string>
     <string name="hint_sign_hmac_sha256_secret">Секретный ключ HMAC-SHA-256</string>
-    <string name="hint_sender">число или текст</string>
-    <string name="hint_sms_filter">оставьте пустым, чтобы пересылать все</string>
     <string name="label_sms_filter">Фильтр по тексту (regex, необязательно)</string>
     <string name="sms_filter_recommendation">Пересылать, только если сообщение соответствует этому regex. Напр., OTP пересылает сообщения, содержащие OTP; (?s)^(?!.*OTP) пересылает те, что не содержат.</string>
     <string name="sender_recommendation">Используйте символ * для перехвата любого SMS-сообщения</string>

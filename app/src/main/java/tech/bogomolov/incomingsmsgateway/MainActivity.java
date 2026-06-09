@@ -2,10 +2,10 @@ package tech.bogomolov.incomingsmsgateway;
 
 import android.Manifest;
 import android.app.ActivityManager;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.DataSetObserver;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,6 +17,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -185,15 +186,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showList() {
-        showInfo("");
-
         context = this;
         ListView listview = findViewById(R.id.listView);
 
         ArrayList<ForwardingConfig> configs = ForwardingConfig.getAll(context);
 
+        // First-run / empty state: point the user at the + button instead of
+        // leaving a blank screen.
+        showInfo(configs.isEmpty() ? getString(R.string.empty_list_hint) : "");
+
         listAdapter = new ListAdapter(configs, context);
         listview.setAdapter(listAdapter);
+
+        // Keep the empty-state hint in sync as rules are added or deleted.
+        listAdapter.registerDataSetObserver(new DataSetObserver() {
+            @Override
+            public void onChanged() {
+                showInfo(listAdapter.getCount() == 0 ? getString(R.string.empty_list_hint) : "");
+            }
+        });
 
         FloatingActionButton fab = findViewById(R.id.btn_add);
         fab.setOnClickListener(this.showAddDialog());
@@ -227,6 +238,9 @@ public class MainActivity extends AppCompatActivity {
     private void showInfo(String text) {
         TextView notice = findViewById(R.id.info_notice);
         notice.setText(text);
+        // The icon above the notice should disappear together with the text.
+        findViewById(R.id.empty_state).setVisibility(
+                text.isEmpty() ? View.GONE : View.VISIBLE);
     }
 
     private View.OnClickListener showAddDialog() {

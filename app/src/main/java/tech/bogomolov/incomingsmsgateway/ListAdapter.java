@@ -1,6 +1,5 @@
 package tech.bogomolov.incomingsmsgateway;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SwitchCompat;
 
 import java.util.ArrayList;
@@ -48,30 +48,14 @@ public class ListAdapter extends ArrayAdapter<ForwardingConfig> {
         TextView url = row.findViewById(R.id.text_url);
         url.setText(config.getUrl());
 
-        TextView template = row.findViewById(R.id.text_template);
-        template.setText(config.getTemplate());
-
-        TextView headers = row.findViewById(R.id.text_headers);
-        headers.setText(config.getHeaders());
-
         SwitchCompat switchSmsOnOff = row.findViewById(R.id.switch_sms_on_off);
-        TextView switchSmsLabel = row.findViewById(R.id.text_sms_on_off);
-        if (config.getIsSmsEnabled()) {
-            switchSmsOnOff.setChecked(true);
-            switchSmsLabel.setText(R.string.btn_on);
-        } else {
-            switchSmsOnOff.setChecked(false);
-            switchSmsLabel.setText(R.string.btn_off);
-        }
+        // Detach any listener a recycled row carries before syncing the state,
+        // so setChecked doesn't save the previous row's config.
+        switchSmsOnOff.setOnCheckedChangeListener(null);
+        switchSmsOnOff.setChecked(config.getIsSmsEnabled());
 
         switchSmsOnOff.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isChecked) {
-                config.setIsSmsEnabled(true);
-                switchSmsLabel.setText(R.string.btn_on);
-            } else {
-                config.setIsSmsEnabled(false);
-                switchSmsLabel.setText(R.string.btn_off);
-            }
+            config.setIsSmsEnabled(isChecked);
             config.save();
         });
 

@@ -1,6 +1,5 @@
 package tech.bogomolov.incomingsmsgateway;
 
-import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -11,10 +10,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.SwitchCompat;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -60,14 +62,14 @@ public class ForwardingConfigDialog {
         final EditText retriesNumInput = view.findViewById(R.id.input_number_retries);
         retriesNumInput.setText(String.valueOf(ForwardingConfig.getDefaultRetriesNumber()));
 
-        final CheckBox chunkedModeCheckbox = view.findViewById(R.id.input_chunked_mode);
+        final SwitchCompat chunkedModeCheckbox = view.findViewById(R.id.input_chunked_mode);
         // Default off: chunked request bodies (Transfer-Encoding: chunked, no Content-Length)
         // are valid HTTP but many webhook servers — notably common PHP setups — receive them
         // as an empty body (issue #97). Fixed-length mode sends Content-Length and works
         // everywhere for these small payloads.
         chunkedModeCheckbox.setChecked(false);
 
-        final CheckBox signHmacSha256Checkbox = view.findViewById(R.id.id_sign_hmac_sha256);
+        final SwitchCompat signHmacSha256Checkbox = view.findViewById(R.id.id_sign_hmac_sha256);
         final EditText signHmacSha256Input = view.findViewById(R.id.id_sign_hmac_sha256_secret);
 
         signHmacSha256Checkbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -75,6 +77,7 @@ public class ForwardingConfigDialog {
         });
 
         prepareSimSelector(context, view, 0);
+        setupAdvancedToggle(view, false);
 
         builder.setView(view);
         builder.setPositiveButton(R.string.btn_add, null);
@@ -111,7 +114,7 @@ public class ForwardingConfigDialog {
         final EditText phoneInput = view.findViewById(R.id.input_phone);
         phoneInput.setText(config.getSender());
 
-        final CheckBox senderRegexCheckbox = view.findViewById(R.id.input_sender_regex);
+        final SwitchCompat senderRegexCheckbox = view.findViewById(R.id.input_sender_regex);
         senderRegexCheckbox.setChecked(config.getIsSenderRegex());
 
         final EditText smsFilterInput = view.findViewById(R.id.input_sms_filter);
@@ -131,19 +134,19 @@ public class ForwardingConfigDialog {
         final EditText retriesNumInput = view.findViewById(R.id.input_number_retries);
         retriesNumInput.setText(String.valueOf(config.getRetriesNumber()));
 
-        final CheckBox ignoreSslCheckbox = view.findViewById(R.id.input_ignore_ssl);
+        final SwitchCompat ignoreSslCheckbox = view.findViewById(R.id.input_ignore_ssl);
         ignoreSslCheckbox.setChecked(config.getIgnoreSsl());
 
-        final CheckBox chunkedModeCheckbox = view.findViewById(R.id.input_chunked_mode);
+        final SwitchCompat chunkedModeCheckbox = view.findViewById(R.id.input_chunked_mode);
         chunkedModeCheckbox.setChecked(config.getChunkedMode());
 
-        final CheckBox storeFailedCheckbox = view.findViewById(R.id.input_store_failed);
+        final SwitchCompat storeFailedCheckbox = view.findViewById(R.id.input_store_failed);
         storeFailedCheckbox.setChecked(config.getStoreFailed());
 
-        final CheckBox localModeCheckbox = view.findViewById(R.id.input_local_mode);
+        final SwitchCompat localModeCheckbox = view.findViewById(R.id.input_local_mode);
         localModeCheckbox.setChecked(config.getLocalMode());
 
-        final CheckBox signHmacSha256Checkbox = view.findViewById(R.id.id_sign_hmac_sha256);
+        final SwitchCompat signHmacSha256Checkbox = view.findViewById(R.id.id_sign_hmac_sha256);
         signHmacSha256Checkbox.setChecked(config.getSignHmacSha256());
 
         final EditText signHmacSha256Input = view.findViewById(R.id.id_sign_hmac_sha256_secret);
@@ -154,6 +157,10 @@ public class ForwardingConfigDialog {
         signHmacSha256Checkbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             signHmacSha256Input.setEnabled(isChecked);
         });
+
+        // Auto-expand advanced when editing a rule that already relies on it, so the
+        // user doesn't have to hunt for settings they previously configured.
+        setupAdvancedToggle(view, hasNonDefaultAdvanced(config));
 
         builder.setView(view);
         builder.setPositiveButton(R.string.btn_save, null);
@@ -190,7 +197,7 @@ public class ForwardingConfigDialog {
             return null;
         }
 
-        final CheckBox senderRegexCheckbox = view.findViewById(R.id.input_sender_regex);
+        final SwitchCompat senderRegexCheckbox = view.findViewById(R.id.input_sender_regex);
         boolean isSenderRegex = senderRegexCheckbox.isChecked();
 
         final EditText smsFilterInput = view.findViewById(R.id.input_sms_filter);
@@ -238,19 +245,19 @@ public class ForwardingConfigDialog {
             return null;
         }
 
-        final CheckBox ignoreSslCheckbox = view.findViewById(R.id.input_ignore_ssl);
+        final SwitchCompat ignoreSslCheckbox = view.findViewById(R.id.input_ignore_ssl);
         boolean ignoreSsl = ignoreSslCheckbox.isChecked();
 
-        final CheckBox chunkedModeCheckbox = view.findViewById(R.id.input_chunked_mode);
+        final SwitchCompat chunkedModeCheckbox = view.findViewById(R.id.input_chunked_mode);
         boolean chunkedMode = chunkedModeCheckbox.isChecked();
 
-        final CheckBox storeFailedCheckbox = view.findViewById(R.id.input_store_failed);
+        final SwitchCompat storeFailedCheckbox = view.findViewById(R.id.input_store_failed);
         boolean storeFailed = storeFailedCheckbox.isChecked();
 
-        final CheckBox localModeCheckbox = view.findViewById(R.id.input_local_mode);
+        final SwitchCompat localModeCheckbox = view.findViewById(R.id.input_local_mode);
         boolean localMode = localModeCheckbox.isChecked();
 
-        final CheckBox signHmacSha256Checkbox = view.findViewById(R.id.id_sign_hmac_sha256);
+        final SwitchCompat signHmacSha256Checkbox = view.findViewById(R.id.id_sign_hmac_sha256);
         boolean signHmacSha256 = signHmacSha256Checkbox.isChecked();
 
         final EditText signHmacSha256Input = view.findViewById(R.id.id_sign_hmac_sha256_secret);
@@ -271,6 +278,43 @@ public class ForwardingConfigDialog {
         config.setSignHmacSha256Secret(signHmacSha256Secret);
 
         return config;
+    }
+
+    // The advanced options live in a section collapsed by default so the basic
+    // form is just sender + filter + URL. The bold header doubles as the toggle,
+    // with a chevron showing the current state.
+    private void setupAdvancedToggle(View view, boolean expanded) {
+        final TextView header = view.findViewById(R.id.advanced_header);
+        final View section = view.findViewById(R.id.advanced_section);
+
+        section.setVisibility(expanded ? View.VISIBLE : View.GONE);
+        updateAdvancedHeader(header, expanded);
+
+        header.setOnClickListener(v -> {
+            boolean nowVisible = section.getVisibility() != View.VISIBLE;
+            section.setVisibility(nowVisible ? View.VISIBLE : View.GONE);
+            updateAdvancedHeader(header, nowVisible);
+        });
+    }
+
+    private void updateAdvancedHeader(TextView header, boolean expanded) {
+        String arrow = expanded ? "▾  " : "▸  ";
+        header.setText(arrow + context.getString(R.string.label_advanced));
+    }
+
+    // True when the rule deviates from the defaults on any advanced field, so the
+    // edit dialog knows to reveal the advanced section instead of hiding settings
+    // the user already relies on.
+    private boolean hasNonDefaultAdvanced(ForwardingConfig config) {
+        return config.getSimSlot() != 0
+                || !ForwardingConfig.getDefaultJsonTemplate().equals(config.getTemplate())
+                || !ForwardingConfig.getDefaultJsonHeaders().equals(config.getHeaders())
+                || config.getRetriesNumber() != ForwardingConfig.getDefaultRetriesNumber()
+                || config.getIgnoreSsl()
+                || config.getChunkedMode()
+                || config.getStoreFailed()
+                || config.getLocalMode()
+                || config.getSignHmacSha256();
     }
 
     private void prepareSimSelector(Context context, View view, int selected) {
