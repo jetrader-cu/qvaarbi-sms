@@ -109,7 +109,9 @@ public class Request {
     public void setSignatureHeader(@NonNull String secret, @NonNull String body) {
         try {
             this.connection.setRequestProperty("X-Signature", computeHmacSha256Hex(secret, body));
-        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
+        } catch (NoSuchAlgorithmException | InvalidKeyException | IllegalArgumentException e) {
+            // IllegalArgumentException covers an empty secret, which SecretKeySpec
+            // rejects — never let a bad signing config crash the delivery path.
             Log.e("SmsGateway", "hmac signature error: " + e);
         }
     }

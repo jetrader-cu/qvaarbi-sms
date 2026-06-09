@@ -98,6 +98,12 @@ public class MainActivity extends AppCompatActivity {
         // Failures accrue in the background, so refresh the retry counter each
         // time the activity comes forward.
         invalidateOptionsMenu();
+        // Rules can also change outside this screen (Settings -> import a backup),
+        // so reload the list. Null until the permission flow has let showList() run.
+        if (listAdapter != null) {
+            listAdapter.clear();
+            listAdapter.addAll(ForwardingConfig.getAll(this));
+        }
     }
 
     @Override

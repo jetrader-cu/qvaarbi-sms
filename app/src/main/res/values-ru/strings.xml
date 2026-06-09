@@ -40,6 +40,7 @@
     <string name="error_wrong_url">Неверный URL-адрес</string>
     <string name="error_wrong_json">Недопустимый объект JSON</string>
     <string name="error_wrong_retries_number">Должно быть больше 0</string>
+    <string name="error_empty_hmac_secret">Для подписи HMAC требуется секрет</string>
     <string name="asterisk">*</string>
     <string name="any">Любой</string>
     <string name="confirm_delete">Вы действительно хотите удалить "%s"?</string>

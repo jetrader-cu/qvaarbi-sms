@@ -364,11 +364,22 @@ public class ForwardingConfig {
     // file so the caller can report it.
     public static int importFromJson(Context context, String content) throws JSONException {
         JSONArray array = new JSONArray(content);
+        int imported = 0;
         for (int i = 0; i < array.length(); i++) {
             JSONObject json = array.getJSONObject(i);
-            fromStoredValue(context, null, json.toString()).save();
+            ForwardingConfig config = fromStoredValue(context, null, json.toString());
+            // A rule missing a required field parses to nulls (fromStoredValue
+            // swallows the JSONException); saving it would NPE message
+            // preparation on every later SMS, so skip it instead.
+            if (config.getSender() == null || config.getUrl() == null
+                    || config.getTemplate() == null || config.getHeaders() == null) {
+                Log.e("ForwardingConfig", "skipping invalid backup rule: " + json);
+                continue;
+            }
+            config.save();
+            imported++;
         }
-        return array.length();
+        return imported;
     }
 
     public void remove() {

@@ -113,6 +113,7 @@ public class FailedMessage {
         json.put(RequestWorker.DATA_SIGN_HMAC_SHA256, data.getBoolean(RequestWorker.DATA_SIGN_HMAC_SHA256, false));
         json.put(RequestWorker.DATA_SIGN_HMAC_SHA256_SECRET, data.getString(RequestWorker.DATA_SIGN_HMAC_SHA256_SECRET));
         json.put(RequestWorker.DATA_STORE_FAILED, data.getBoolean(RequestWorker.DATA_STORE_FAILED, false));
+        json.put(RequestWorker.DATA_LOCAL_MODE, data.getBoolean(RequestWorker.DATA_LOCAL_MODE, false));
         return json;
     }
 
@@ -127,6 +128,10 @@ public class FailedMessage {
                 .putBoolean(RequestWorker.DATA_SIGN_HMAC_SHA256, json.optBoolean(RequestWorker.DATA_SIGN_HMAC_SHA256, false))
                 .putString(RequestWorker.DATA_SIGN_HMAC_SHA256_SECRET, json.optString(RequestWorker.DATA_SIGN_HMAC_SHA256_SECRET, null))
                 .putBoolean(RequestWorker.DATA_STORE_FAILED, json.optBoolean(RequestWorker.DATA_STORE_FAILED, false))
+                // Local mode must survive the round-trip, or a retried message
+                // regains the validated-internet constraint and a LAN-only
+                // delivery never runs (see RequestWorker.enqueue).
+                .putBoolean(RequestWorker.DATA_LOCAL_MODE, json.optBoolean(RequestWorker.DATA_LOCAL_MODE, false))
                 .build();
     }
 

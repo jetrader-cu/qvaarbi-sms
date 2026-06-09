@@ -262,6 +262,12 @@ public class ForwardingConfigDialog {
 
         final EditText signHmacSha256Input = view.findViewById(R.id.id_sign_hmac_sha256_secret);
         String signHmacSha256Secret = signHmacSha256Input.getText().toString();
+        // An empty secret can't produce a signature (SecretKeySpec rejects an
+        // empty key), so block it here like the other invalid-form cases.
+        if (signHmacSha256 && signHmacSha256Secret.isEmpty()) {
+            signHmacSha256Input.setError(context.getString(R.string.error_empty_hmac_secret));
+            return null;
+        }
 
         config.setSender(sender);
         config.setIsSenderRegex(isSenderRegex);
@@ -358,8 +364,12 @@ public class ForwardingConfigDialog {
 
             Request request = new Request(config.getUrl(), payload);
             request.setJsonHeaders(config.getHeaders());
-            if (config.getSignHmacSha256()) {
-                request.setSignatureHeader(Objects.requireNonNull(config.getSignHmacSha256Secret()), payload);
+            // Guard against a null/empty secret (possible in a hand-edited backup
+            // import) — an uncaught exception on this bare thread would kill the
+            // whole app, not just the test request.
+            String secret = config.getSignHmacSha256Secret();
+            if (config.getSignHmacSha256() && secret != null && !secret.isEmpty()) {
+                request.setSignatureHeader(secret, payload);
             }
             request.setIgnoreSsl(config.getIgnoreSsl());
             request.setUseChunkedMode(config.getChunkedMode());

@@ -70,6 +70,9 @@ public class FailedMessageTest {
         // The retry flag must round-trip so a re-sent message that fails again is
         // stored once more.
         assertTrue(loaded.getBoolean(RequestWorker.DATA_STORE_FAILED, false));
+        // Local mode must round-trip too, or the retry regains the
+        // validated-internet constraint and a LAN-only delivery never runs.
+        assertTrue(loaded.getBoolean(RequestWorker.DATA_LOCAL_MODE, false));
     }
 
     @Test
@@ -111,6 +114,7 @@ public class FailedMessageTest {
                 .putBoolean(RequestWorker.DATA_CHUNKED_MODE, false)
                 .putInt(RequestWorker.DATA_MAX_RETRIES, 5)
                 .putBoolean(RequestWorker.DATA_STORE_FAILED, true)
+                .putBoolean(RequestWorker.DATA_LOCAL_MODE, true)
                 .build();
     }
 }

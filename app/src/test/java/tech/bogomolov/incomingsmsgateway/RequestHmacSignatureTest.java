@@ -62,6 +62,15 @@ public class RequestHmacSignatureTest {
     }
 
     @Test
+    public void testSetSignatureHeaderWithEmptySecretDoesNotThrow() {
+        // SecretKeySpec rejects an empty key with IllegalArgumentException; the
+        // delivery path must swallow that (logging it) rather than crash the
+        // worker or the dialog's test thread.
+        Request request = new Request("https://example.com", "{}");
+        request.setSignatureHeader("", "{}");
+    }
+
+    @Test
     public void testNonAsciiBodyIsSignedAsUtf8() throws Exception {
         // The body is written to the wire as UTF-8 by Request.execute(), so the
         // signature must be computed over the same UTF-8 bytes. Compare against

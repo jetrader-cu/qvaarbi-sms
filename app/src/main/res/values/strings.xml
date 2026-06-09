@@ -40,6 +40,7 @@
     <string name="error_wrong_url">Wrong URL</string>
     <string name="error_wrong_json">Not a valid JSON object</string>
     <string name="error_wrong_retries_number">Should be more than 0</string>
+    <string name="error_empty_hmac_secret">Secret is required for HMAC signing</string>
     <string name="asterisk">*</string>
     <string name="any">Any</string>
     <string name="confirm_delete">Do you really want to delete "%s" record?</string>

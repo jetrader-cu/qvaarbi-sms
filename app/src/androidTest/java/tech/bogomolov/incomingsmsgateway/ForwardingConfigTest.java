@@ -270,6 +270,22 @@ public class ForwardingConfigTest {
         assertEquals(2, ForwardingConfig.getAll(context).size());
     }
 
+    @Test
+    public void testImportSkipsRulesMissingRequiredFields() throws Exception {
+        // A hand-edited or truncated backup rule without a URL must not be saved:
+        // a half-built config would NPE message preparation on every later SMS.
+        // Valid rules in the same file still import, and the count reflects only them.
+        String backup = "[{\"sender\":\"+2222\",\"template\":\"{}\",\"headers\":\"{}\"},"
+                + "{\"sender\":\"+3333\",\"url\":\"https://ok.example\","
+                + "\"template\":\"{}\",\"headers\":\"{}\"}]";
+
+        int imported = ForwardingConfig.importFromJson(context, backup);
+
+        assertEquals(1, imported);
+        assertEquals(1, ForwardingConfig.getAll(context).size());
+        assertEquals("+3333", ForwardingConfig.getAll(context).get(0).getSender());
+    }
+
     /** A minimal stored config that only carries the always-required fields. */
     private JSONObject baseJson() throws Exception {
         JSONObject json = new JSONObject();

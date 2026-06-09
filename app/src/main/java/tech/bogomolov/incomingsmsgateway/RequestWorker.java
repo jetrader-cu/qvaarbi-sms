@@ -1,6 +1,7 @@
 package tech.bogomolov.incomingsmsgateway;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.work.BackoffPolicy;
@@ -12,7 +13,6 @@ import androidx.work.WorkManager;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 public class RequestWorker extends Worker {
@@ -84,8 +84,14 @@ public class RequestWorker extends Worker {
 
         Request request = new Request(url, text);
         request.setJsonHeaders(headers);
-        if (signHmacSha256) {
-            request.setSignatureHeader(Objects.requireNonNull(signHmacSha256Secret), text);
+        // A null/empty secret can't be signed with (and would throw, which makes
+        // WorkManager fail the job *without* running the store-failed path). Send
+        // unsigned instead: the endpoint's auth rejection stays visible in the
+        // syslog via the logged response code.
+        if (signHmacSha256 && signHmacSha256Secret != null && !signHmacSha256Secret.isEmpty()) {
+            request.setSignatureHeader(signHmacSha256Secret, text);
+        } else if (signHmacSha256) {
+            Log.e("RequestWorker", "HMAC signing enabled but no secret stored; sending unsigned");
         }
 
         request.setIgnoreSsl(ignoreSsl);
