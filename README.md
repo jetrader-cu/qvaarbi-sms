@@ -151,6 +151,29 @@ a URL you provide at a chosen interval (in minutes), so an external dead-man's-s
 phone dies, is killed, or loses connectivity and the pings stop. Lower intervals detect failures
 sooner but use more battery and data. Use the **Test** button to send one ping immediately.
 
+#### Local network mode
+By default a delivery waits for a *validated internet* connection before it runs. If your webhook
+lives on the local network (e.g. Home Assistant or a Raspberry Pi on a Wi-Fi without upstream
+internet), that wait never ends and nothing is forwarded. Enable **Local network mode** in the
+rule's advanced parameters to drop the internet requirement: the request is sent immediately on
+whatever network the phone has (see issue #83). Failed requests still retry with the usual
+exponential backoff.
+
+#### Chunked vs fixed-length request body
+An advanced per-rule switch controls how the POST body is streamed. **New rules default to
+fixed-length** (a normal `Content-Length` request), because many webhook servers — notably common
+PHP setups — receive a chunked (`Transfer-Encoding: chunked`) body as empty (see issue #97).
+Existing rules keep whatever mode they were created with; if your PHP endpoint sees an empty
+`php://input`, edit the rule and turn **Chunked mode** off.
+
+#### Back up and restore rules (export / import)
+Open **Settings** from the action bar to export all forwarding rules to a JSON file, or import a
+previously exported file — useful for backups and for migrating to a new phone (see issue #76).
+Importing merges by rule: rules from the file overwrite the existing rules they were exported from
+and new ones are added, so re-importing the same file doesn't create duplicates. **The export file
+contains your webhook URLs, custom headers and HMAC secrets in plain text — store it accordingly.**
+Heartbeat settings and stored failed messages are not part of the backup.
+
 ### Request info
 HTTP method: POST  
 Content-type: application/json; charset=utf-8  
