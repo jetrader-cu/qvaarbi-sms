@@ -5,18 +5,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.telephony.SmsMessage;
+import android.util.Log;
 
-import androidx.work.BackoffPolicy;
-import androidx.work.Constraints;
 import androidx.work.Data;
-import androidx.work.NetworkType;
-import androidx.work.OneTimeWorkRequest;
-import androidx.work.WorkManager;
-import androidx.work.WorkRequest;
 
 import java.util.ArrayList;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 public class SmsBroadcastReceiver extends BroadcastReceiver {
 
@@ -52,11 +48,15 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
         }
 
         for (ForwardingConfig config : configs) {
-            if (!sender.equals(config.getSender()) && !config.getSender().equals(asterisk)) {
+            if (!matchesSender(config, sender, asterisk)) {
                 continue;
             }
 
             if (!config.getIsSmsEnabled()) {
+                continue;
+            }
+
+            if (!matchesFilter(config.getSmsFilter(), content.toString())) {
                 continue;
             }
 
@@ -83,10 +83,6 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
 
         String message = config.prepareMessage(sender, content, slotName, timeStamp);
 
-        Constraints constraints = new Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.CONNECTED)
-                .build();
-
         Data data = new Data.Builder()
                 .putString(RequestWorker.DATA_URL, config.getUrl())
                 .putString(RequestWorker.DATA_TEXT, message)
@@ -94,23 +90,58 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
                 .putBoolean(RequestWorker.DATA_IGNORE_SSL, config.getIgnoreSsl())
                 .putBoolean(RequestWorker.DATA_CHUNKED_MODE, config.getChunkedMode())
                 .putInt(RequestWorker.DATA_MAX_RETRIES, config.getRetriesNumber())
+                .putBoolean(RequestWorker.DATA_SIGN_HMAC_SHA256, config.getSignHmacSha256())
+                .putString(RequestWorker.DATA_SIGN_HMAC_SHA256_SECRET, config.getSignHmacSha256Secret())
+                .putBoolean(RequestWorker.DATA_STORE_FAILED, config.getStoreFailed())
+                .putBoolean(RequestWorker.DATA_LOCAL_MODE, config.getLocalMode())
                 .build();
 
-        WorkRequest workRequest =
-                new OneTimeWorkRequest.Builder(RequestWorker.class)
-                        .setConstraints(constraints)
-                        .setBackoffCriteria(
-                                BackoffPolicy.EXPONENTIAL,
-                                OneTimeWorkRequest.MIN_BACKOFF_MILLIS,
-                                TimeUnit.MILLISECONDS
-                        )
-                        .setInputData(data)
-                        .build();
+        RequestWorker.enqueue(this.context, data);
+    }
 
-        WorkManager
-                .getInstance(this.context)
-                .enqueue(workRequest);
+    // Per-config sender match. The asterisk wildcard always means "any sender"
+    // regardless of the regex flag. When the rule opts into regex matching (issue
+    // #88 — e.g. an Indian sender ID like AB-CTAXKR whose operator prefix rotates),
+    // the configured sender is a Java regex tested against the incoming address with
+    // find() (substring), mirroring the content filter. Unlike the content filter
+    // this fails *closed*: an invalid pattern matches nothing, so a typo cannot leak
+    // unrelated senders to the endpoint. The default (flag off) is the historic
+    // exact String.equals match, so every existing stored rule is unchanged.
+    static boolean matchesSender(ForwardingConfig config, String sender, String asterisk) {
+        String configured = config.getSender();
+        if (configured.equals(asterisk)) {
+            return true;
+        }
+        if (config.getIsSenderRegex()) {
+            try {
+                return Pattern.compile(configured).matcher(sender).find();
+            } catch (PatternSyntaxException e) {
+                Log.e("SmsBroadcastReceiver",
+                        "Invalid sender regex \"" + configured + "\": " + e.getMessage());
+                return false;
+            }
+        }
+        return sender.equals(configured);
+    }
 
+    // Per-config content filter (issue #52). An empty filter forwards every
+    // message (the historic behaviour). A non-empty filter is a Java regex tested
+    // against the SMS body with find() (substring match): the message is forwarded
+    // only when the regex matches. The single regex covers both directions —
+    // "OTP" forwards messages that contain OTP, while a negative-lookahead such as
+    // "(?s)^(?!.*OTP)" forwards every message that does NOT contain it. An invalid
+    // pattern fails open (forwards and logs) so a typo never silently drops SMS,
+    // mirroring the "never crash forwarding" rule used by the %Regex% placeholder.
+    static boolean matchesFilter(String filter, String content) {
+        if (filter == null || filter.isEmpty()) {
+            return true;
+        }
+        try {
+            return Pattern.compile(filter).matcher(content).find();
+        } catch (PatternSyntaxException e) {
+            Log.e("SmsBroadcastReceiver", "Invalid filter regex \"" + filter + "\": " + e.getMessage());
+            return true;
+        }
     }
 
     private int detectSim(Bundle bundle) {

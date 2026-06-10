@@ -3,6 +3,8 @@ package tech.bogomolov.incomingsmsgateway;
 import android.annotation.SuppressLint;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -11,16 +13,20 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import javax.net.ssl.HttpsURLConnection;
 
 import tech.bogomolov.incomingsmsgateway.SSLSocketFactory.TLSSocketFactory;
@@ -31,6 +37,7 @@ public class Request {
     private boolean ignoreSsl = false;
     private boolean useChunkedMode = true;
     private String error = null;
+    private int responseCode = -1;
 
     private HttpURLConnection connection;
 
@@ -81,12 +88,47 @@ public class Request {
         }
     }
 
+    public static String convertByteToHexadecimal(@NonNull byte[] byteArray) {
+        StringBuilder hex = new StringBuilder();
+        for (byte i : byteArray) {
+            hex.append(String.format("%02x", i));
+        }
+        return hex.toString();
+    }
+
+    public static String computeHmacSha256Hex(@NonNull String secret, @NonNull String body)
+            throws NoSuchAlgorithmException, InvalidKeyException {
+        String algorithm = "HmacSHA256";
+        SecretKeySpec secretKeySpec =
+                new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), algorithm);
+        Mac mac = Mac.getInstance(algorithm);
+        mac.init(secretKeySpec);
+        return convertByteToHexadecimal(mac.doFinal(body.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    public void setSignatureHeader(@NonNull String secret, @NonNull String body) {
+        try {
+            this.connection.setRequestProperty("X-Signature", computeHmacSha256Hex(secret, body));
+        } catch (NoSuchAlgorithmException | InvalidKeyException | IllegalArgumentException e) {
+            // IllegalArgumentException covers an empty secret, which SecretKeySpec
+            // rejects — never let a bad signing config crash the delivery path.
+            Log.e("SmsGateway", "hmac signature error: " + e);
+        }
+    }
+
+
     public void setIgnoreSsl(boolean ignoreSsl) {
         this.ignoreSsl = ignoreSsl;
     }
 
     public void setUseChunkedMode(boolean useChunkedMode) {
         this.useChunkedMode = useChunkedMode;
+    }
+
+    // HTTP status of the last execute(), or -1 if the request never got a response
+    // (malformed URL, connection failure, or not yet executed).
+    public int getResponseCode() {
+        return this.responseCode;
     }
 
     @SuppressLint({"AllowAllHostnameVerifier"})
@@ -112,7 +154,10 @@ public class Request {
             if (this.useChunkedMode) {
                 this.connection.setChunkedStreamingMode(0);
             } else {
-                this.connection.setFixedLengthStreamingMode(this.payload.length());
+                // Content-Length must be the UTF-8 byte count, not the char count, or a
+                // payload with multi-byte characters gets truncated server-side.
+                this.connection.setFixedLengthStreamingMode(
+                        this.payload.getBytes(StandardCharsets.UTF_8).length);
             }
 
             OutputStream out = new BufferedOutputStream(this.connection.getOutputStream());
@@ -129,10 +174,20 @@ public class Request {
             writer.close();
             out.close();
 
-            new BufferedInputStream(this.connection.getInputStream());
+            // getResponseCode() does not throw on 4xx/5xx, so read it first.
+            // The actual error body (if any) is exposed via getErrorStream(), not
+            // getInputStream() — reading getInputStream() on a non-2xx response throws.
+            this.responseCode = this.connection.getResponseCode();
 
-            char code = Integer.toString(this.connection.getResponseCode()).charAt(0);
-            if (!Character.toString(code).equals("2")) {
+            boolean isSuccess = this.responseCode >= 200 && this.responseCode < 300;
+            InputStream responseStream =
+                    isSuccess ? this.connection.getInputStream() : this.connection.getErrorStream();
+            if (responseStream != null) {
+                new BufferedInputStream(responseStream).close();
+            }
+
+            if (!isSuccess) {
+                Log.e("SmsGateway", "response code: " + this.responseCode + " for " + this.connection.getURL());
                 result = RESULT_RETRY;
             }
         } catch (NoSuchAlgorithmException e) {
