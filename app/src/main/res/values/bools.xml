@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Dark status-bar icons over the light status bar; values-night flips it. -->
-    <bool name="light_status_bar">true</bool>
+    <!-- Dark-only QvaArbi: iconos claros sobre status bar obsidiana. -->
+    <bool name="light_status_bar">false</bool>
 </resources>

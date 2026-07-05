@@ -1,26 +1,28 @@
 <resources>
 
-    <!-- Light theme. values-night redefines Base.AppTheme with a dark parent
-         and the palette flips through values-night/colors.xml. -->
-    <style name="Base.AppTheme" parent="Theme.MaterialComponents.Light">
+    <!-- Tema QvaArbi: dark-only (paridad con la web, que no tiene modo claro).
+         Obsidiana #050609 de fondo, superficies #0D1420, acento emerald. -->
+    <style name="Base.AppTheme" parent="Theme.MaterialComponents">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorStatusBar</item>
         <item name="colorSecondary">@color/colorAccent</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:colorBackground">@color/colorBackground</item>
         <item name="android:windowBackground">@color/colorBackground</item>
+        <item name="colorSurface">@color/colorSurface</item>
         <item name="actionBarStyle">@style/AppTheme.ActionBar</item>
     </style>
 
     <style name="AppTheme" parent="Base.AppTheme" />
 
-    <!-- Flat surface-colored app bar instead of the old colored DarkActionBar;
-         title/icon colors come from the theme's actionBarTheme. -->
+    <!-- App bar plana color superficie (patrón QvaArbi: header sobrio). -->
     <style name="AppTheme.ActionBar" parent="Widget.AppCompat.ActionBar.Solid">
         <item name="background">@color/colorSurface</item>
         <item name="elevation">3dp</item>
     </style>
 
+    <!-- Header de sección: uppercase + tracking amplio + emerald (espejo del
+         "uppercase tracking-[0.2em] text-emerald" del frontend QvaArbi). -->
     <style name="AppTheme.SectionHeader" parent="">
         <item name="android:textSize">13sp</item>
         <item name="android:textStyle">bold</item>

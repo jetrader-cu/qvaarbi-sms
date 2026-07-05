@@ -1,1 +1,0 @@
-eingehende SMS zu einer URL weiterleiten

@@ -4,6 +4,11 @@ Fork rebrandeado de [bogkonstantin/android_income_sms_gateway_webhook](https://g
 
 ## Cambios respecto al upstream
 
+- UI dark-only obsidiana `#050609`/`#0D1420` + acento emerald `#34D399` (paridad QvaArbi)
+- Strings 100% en español, hints apuntando al webhook QvaArbi; sin referencias a terceros
+- Launcher adaptive + legacy: rayo QvaArbi en burbuja SMS emerald (generados con pycairo)
+- Icono de notificación = rayo blanco; eliminados `values-night`, `values-ru`, fastlane y assets upstream
+
 - `applicationId`: `com.qvaarbi.sms` (instala junto a la app original sin conflicto)
 - `app_name`: "QvaArbi SMS" (es/ru)
 - `versionCode 1` / `versionName 1.0.0`
