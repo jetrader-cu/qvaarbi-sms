@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">SMS пересылатель</string>
+    <string name="app_name">QvaArbi SMS</string>
     <string name="permission_needed">Установите разрешение на доступ к SMS, чтобы использовать это приложение.</string>
     <string name="empty_list_hint">Пока нет правил пересылки.\nНажмите +, чтобы добавить.</string>
     <string name="input_url">https://example.com</string>

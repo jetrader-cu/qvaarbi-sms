@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Sms Forwarder</string>
+    <string name="app_name">QvaArbi SMS</string>
     <string name="permission_needed">Set permission to access SMS to use this app.</string>
     <string name="empty_list_hint">No forwarding rules yet.\nTap + to add one.</string>
     <string name="input_url">https://example.com</string>
