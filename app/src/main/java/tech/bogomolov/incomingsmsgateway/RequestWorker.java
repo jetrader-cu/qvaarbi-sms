@@ -27,6 +27,9 @@ public class RequestWorker extends Worker {
     public final static String DATA_SIGN_HMAC_SHA256_SECRET = "SIGN_HMAC_SHA256_SECRET";
     public final static String DATA_STORE_FAILED = "STORE_FAILED";
     public final static String DATA_LOCAL_MODE = "LOCAL_MODE";
+    // Correlación con la entrada de MessageLog creada al recibir el SMS, para que
+    // cada intento de entrega actualice ESA misma entrada (spec §9).
+    public final static String DATA_LOG_KEY = "LOG_KEY";
 
     public RequestWorker(
             @NonNull Context context,
@@ -69,8 +72,14 @@ public class RequestWorker extends Worker {
     public Result doWork() {
         int maxRetries = getInputData().getInt(DATA_MAX_RETRIES, 10);
         boolean storeFailed = getInputData().getBoolean(DATA_STORE_FAILED, false);
+        String logKey = getInputData().getString(DATA_LOG_KEY);
+        // getRunAttemptCount() es 0-based; el nº de intento visible al usuario es +1.
+        int attempt = getRunAttemptCount() + 1;
 
         if (getRunAttemptCount() > maxRetries) {
+            // Reintentos agotados: cierre terminal como fallido, sin respuesta nueva.
+            recordOutcome(logKey, MessageLog.STATUS_FAILED, -1, attempt,
+                    "reintentos agotados");
             return fail(storeFailed);
         }
 
@@ -98,16 +107,54 @@ public class RequestWorker extends Worker {
         request.setUseChunkedMode(useChunkedMode);
 
         String result = request.execute();
+        int httpCode = request.getResponseCode();
 
         if (result.equals(Request.RESULT_RETRY)) {
+            // Reintentable (5xx/timeout/red): "retry" si aún quedan intentos, si no
+            // será el próximo doWork el que lo marque failed vía el guard de arriba.
+            boolean willRetry = getRunAttemptCount() < maxRetries;
+            recordOutcome(logKey,
+                    willRetry ? MessageLog.STATUS_RETRY : MessageLog.STATUS_FAILED,
+                    httpCode, attempt, httpDetail(httpCode));
             return Result.retry();
         }
 
         if (result.equals(Request.RESULT_ERROR)) {
+            recordOutcome(logKey, MessageLog.STATUS_FAILED, httpCode, attempt,
+                    httpDetail(httpCode));
             return fail(storeFailed);
         }
 
+        recordOutcome(logKey, MessageLog.STATUS_SENT, httpCode, attempt, "HTTP " + httpCode);
         return Result.success();
+    }
+
+    // Actualiza el registro de mensajes y el estado de conexión del banner (spec
+    // REQ-003/010). Best-effort: nunca debe alterar el Result devuelto al WorkManager.
+    private void recordOutcome(String logKey, String status, int httpCode, int attempt,
+                               String detail) {
+        Context context = getApplicationContext();
+        try {
+            MessageLog.update(context, logKey, status, httpCode, attempt);
+            boolean ok = status.equals(MessageLog.STATUS_SENT);
+            // Un "retry" transitorio no debe teñir el banner de rojo permanente; sólo
+            // los resultados terminales (sent/failed) mueven el estado de conexión.
+            if (ok || status.equals(MessageLog.STATUS_FAILED)) {
+                ConnectionStatus.record(context, ok, detail, ConnectionStatus.SOURCE_DELIVERY);
+            }
+        } catch (Exception e) {
+            Log.e("RequestWorker", "outcome record failed: " + e.getMessage());
+        }
+    }
+
+    private static String httpDetail(int httpCode) {
+        if (httpCode < 0) {
+            return "sin respuesta";
+        }
+        if (httpCode == 401) {
+            return "HTTP 401 firma inválida";
+        }
+        return "HTTP " + httpCode;
     }
 
     // Permanent failure: optionally persist the payload for manual retry, then

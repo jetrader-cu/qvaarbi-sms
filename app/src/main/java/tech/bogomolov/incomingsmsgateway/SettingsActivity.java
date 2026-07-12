@@ -79,7 +79,113 @@ public class SettingsActivity extends AppCompatActivity {
         Button testButton = findViewById(R.id.btn_heartbeat_test);
         testButton.setOnClickListener(v -> testHeartbeat());
 
+        setupWebhookSection();
+        setupUpdatesSection();
         setupBackupSection();
+    }
+
+    // Sección "Actualizaciones" (spec REQ-009): toggle de auto-chequeo + búsqueda manual.
+    private void setupUpdatesSection() {
+        final SwitchCompat autoUpdate = findViewById(R.id.input_auto_update);
+        autoUpdate.setChecked(UpdateSettings.isAutoCheckEnabled(this));
+        autoUpdate.setOnCheckedChangeListener(
+                (v, checked) -> UpdateSettings.setAutoCheckEnabled(this, checked));
+
+        findViewById(R.id.btn_check_updates).setOnClickListener(v -> checkUpdatesNow());
+    }
+
+    // Búsqueda manual: consulta el manifest en background y avisa el resultado.
+    private void checkUpdatesNow() {
+        new Thread(() -> {
+            UpdateManifest manifest = UpdateChecker.fetch(getApplicationContext());
+            runOnUiThread(() -> {
+                if (isFinishing()) {
+                    return;
+                }
+                if (UpdateChecker.hasUpdate(manifest)) {
+                    new AlertDialog.Builder(this)
+                            .setTitle(R.string.update_available_title)
+                            .setMessage(getString(
+                                    R.string.update_available_message_short, manifest.versionName))
+                            .setPositiveButton(R.string.btn_update_now, (d, w) -> {
+                                try {
+                                    startActivity(new android.content.Intent(
+                                            android.content.Intent.ACTION_VIEW,
+                                            android.net.Uri.parse(manifest.apkUrl)));
+                                } catch (Exception ignored) {
+                                }
+                            })
+                            .setNegativeButton(R.string.btn_update_later, null)
+                            .show();
+                } else if (manifest != null) {
+                    Toast.makeText(this, R.string.update_none_toast, Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, R.string.update_check_failed_toast, Toast.LENGTH_SHORT)
+                            .show();
+                }
+            });
+        }).start();
+    }
+
+    // Sección "Webhook de QvaArbi" (spec REQ-006): un único par URL + secret que
+    // heredan todas las reglas sin URL/secret propios. "Probar conexión" guarda y
+    // hace un heartbeat firmado contra {url}/heartbeat.
+    private void setupWebhookSection() {
+        WebhookGlobal webhook = WebhookGlobal.load(this);
+
+        final EditText urlInput = findViewById(R.id.input_webhook_url);
+        urlInput.setText(webhook.getUrl());
+
+        final EditText secretInput = findViewById(R.id.input_webhook_secret);
+        secretInput.setText(webhook.getSecret());
+
+        findViewById(R.id.btn_webhook_save).setOnClickListener(v -> {
+            if (saveWebhook()) {
+                Toast.makeText(this, R.string.webhook_saved_toast, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        findViewById(R.id.btn_webhook_test).setOnClickListener(v -> testWebhook());
+    }
+
+    // Valida y persiste el webhook global. Devuelve false (con error inline) si la
+    // URL no es válida; el secret puede quedar vacío mientras se configura.
+    private boolean saveWebhook() {
+        final EditText urlInput = findViewById(R.id.input_webhook_url);
+        final EditText secretInput = findViewById(R.id.input_webhook_secret);
+        String url = urlInput.getText().toString().trim();
+        String secret = secretInput.getText().toString().trim();
+
+        if (!TextUtils.isEmpty(url)) {
+            try {
+                new URL(url);
+            } catch (MalformedURLException e) {
+                urlInput.setError(getString(R.string.error_wrong_url));
+                return false;
+            }
+        }
+        new WebhookGlobal(url, secret).save(this);
+        return true;
+    }
+
+    // Guarda y prueba: firma un heartbeat contra {webhookUrl}/heartbeat. El backend
+    // valida la firma HMAC y responde 200 → confirma que URL + secret son correctos.
+    private void testWebhook() {
+        if (!saveWebhook()) {
+            return;
+        }
+        final EditText urlInput = findViewById(R.id.input_webhook_url);
+        String url = urlInput.getText().toString().trim();
+        if (TextUtils.isEmpty(url)) {
+            urlInput.setError(getString(R.string.error_empty_url));
+            return;
+        }
+        final String heartbeatUrl = Heartbeat.heartbeatUrlFor(url);
+        new Thread(() -> {
+            String result = Heartbeat.ping(getApplicationContext(), heartbeatUrl);
+            runOnUiThread(() ->
+                    Toast.makeText(getApplicationContext(), result, Toast.LENGTH_LONG).show());
+        }).start();
     }
 
     // The Storage Access Framework intents used for backup require API 19+; hide
@@ -269,9 +375,10 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         new Thread(() -> {
-            Request request = new Request(url, "");
-            request.setUseChunkedMode(false);
-            String result = request.execute();
+            // Firma el ping con el secret del webhook global y registra el estado,
+            // igual que el heartbeat periódico (spec REQ-011), en vez de un POST vacío
+            // sin firma que el endpoint firmado rechazaría con 401.
+            String result = Heartbeat.ping(getApplicationContext(), url);
             runOnUiThread(() ->
                     Toast.makeText(getApplicationContext(), result, Toast.LENGTH_LONG).show());
         }).start();

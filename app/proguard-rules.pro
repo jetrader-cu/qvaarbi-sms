@@ -19,3 +19,17 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Keep all app classes (receivers, services, workers)
+-keep class tech.bogomolov.incomingsmsgateway.** { *; }
+
+# Keep WorkManager workers
+-keep class * extends androidx.work.Worker { *; }
+-keep class * extends androidx.work.ListenableWorker { *; }
+
+# Keep Apache Commons Text
+-keep class org.apache.commons.text.** { *; }
+
+# javax.script is not available on Android; suppress the missing-class warning
+# from commons-text's ScriptStringLookup (we never use that lookup type).
+-dontwarn javax.script.**

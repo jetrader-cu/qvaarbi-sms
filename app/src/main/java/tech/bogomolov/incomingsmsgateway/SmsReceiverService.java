@@ -126,14 +126,12 @@ public class SmsReceiverService extends Service {
         heartbeatRunnable = null;
     }
 
-    // Runs on the heartbeat thread. Reuses Request (HttpURLConnection) with an empty
-    // body in fixed-length mode, so the ping is a plain Content-Length: 0 POST.
+    // Runs on the heartbeat thread. Delega en Heartbeat.ping, que firma el body con el
+    // secret del webhook global (spec REQ-011) —el ping vacío sin firma daba 401 contra
+    // el endpoint firmado— y registra el resultado en ConnectionStatus para el banner.
     private void sendHeartbeat(String url) {
         try {
-            Request request = new Request(url, "");
-            request.setUseChunkedMode(false);
-            String result = request.execute();
-            Log.i("SmsGateway", "heartbeat: " + result);
+            Heartbeat.ping(getApplicationContext(), url);
         } catch (Exception e) {
             Log.e("SmsGateway", "heartbeat error: " + e);
         }

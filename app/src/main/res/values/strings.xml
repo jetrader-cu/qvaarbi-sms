@@ -68,4 +68,63 @@
     <string name="backup_export_failed">Error al exportar</string>
     <string name="backup_import_success">%d regla(s) importada(s)</string>
     <string name="backup_import_failed">Error al importar: no es un archivo de copia válido</string>
+
+    <!-- Registro de mensajes (historial persistente por regla) -->
+    <string name="log_group_title">%1$s · %2$d mensaje(s)</string>
+    <string name="log_status_sent">Enviado</string>
+    <string name="log_status_failed">Fallido</string>
+    <string name="log_status_retry">Reintentando</string>
+    <string name="log_status_pending">En cola</string>
+    <string name="log_attempts">intento %d</string>
+    <string name="log_empty_hint">Aún no hay mensajes registrados.\nAquí aparecerá cada SMS reenviado a QvaArbi con su estado.</string>
+    <string name="log_clear_title">Limpiar registro</string>
+    <string name="log_clear_message">¿Eliminar todo el historial de mensajes de este teléfono?</string>
+
+    <!-- Banner de estado de conexión con QvaArbi -->
+    <string name="status_connected">Conectado a QvaArbi · %s</string>
+    <string name="status_error">Sin conexión a QvaArbi: %1$s · %2$s</string>
+
+    <!-- Base del API QvaArbi (para consultar el manifest de versión) -->
+    <string name="api_base_url" translatable="false">https://qvaarbi-api.arbiexpress.com</string>
+
+    <!-- Auto-actualización -->
+    <string name="label_updates_section">Actualizaciones</string>
+    <string name="updates_info">QvaArbi SMS se distribuye fuera de Google Play. Busca actualizaciones para no quedarte en una versión antigua.</string>
+    <string name="label_auto_update">Buscar actualizaciones automáticamente</string>
+    <string name="update_available_title">Actualización disponible</string>
+    <string name="update_available_message">Hay una nueva versión (%1$s) de QvaArbi SMS.\n\n%2$s</string>
+    <string name="update_available_message_short">Hay una nueva versión (%1$s) de QvaArbi SMS.</string>
+    <string name="btn_update_now">Actualizar</string>
+    <string name="btn_update_later">Ahora no</string>
+    <string name="update_none_toast">Ya tienes la última versión</string>
+    <string name="update_check_failed_toast">No se pudo comprobar la versión</string>
+    <string name="btn_check_updates">Buscar ahora</string>
+    <string name="update_channel">Actualizaciones</string>
+
+    <!-- Ayuda / contacto QvaArbi -->
+    <string name="menu_help">Ayuda</string>
+    <string name="help_version_label">Versión</string>
+    <string name="help_contact_section">Contacto y redes</string>
+    <string name="help_intro">QvaArbi automatiza tu arbitraje P2P. Esta app reenvía los SMS de la banca cubana a tu cuenta para detectar pagos y recepciones.</string>
+    <string name="help_bot_label">Bot de Telegram</string>
+    <string name="help_channel_label">Canal de novedades</string>
+    <string name="help_email_label">Correo de soporte</string>
+    <string name="help_web_label">Sitio web</string>
+    <!-- Enlaces QvaArbi (espejo de frontend/lib/content/help.ts) -->
+    <string name="qvaarbi_telegram_bot" translatable="false">https://t.me/qvaarbi_bot</string>
+    <string name="qvaarbi_telegram_channel" translatable="false">https://t.me/qvaarbi</string>
+    <string name="qvaarbi_support_email" translatable="false">soporte-qvaarbi@arbiexpress.com</string>
+    <string name="qvaarbi_website" translatable="false">https://qvaarbi.arbiexpress.com</string>
+
+    <!-- Plantillas bancarias (seed) -->
+    <string name="url_inherits_global">Webhook global de QvaArbi</string>
+
+    <!-- Webhook global (URL + secret, un solo par para todas las reglas) -->
+    <string name="label_webhook_section">Webhook de QvaArbi</string>
+    <string name="webhook_info">Pega aquí la URL y el secret que genera tu panel QvaArbi (Ajustes → SMS bancarios). Se aplican a todas las reglas bancarias, así no tienes que repetirlos en cada una.</string>
+    <string name="label_webhook_url">URL del webhook</string>
+    <string name="hint_webhook_secret">Secret HMAC-SHA-256</string>
+    <string name="btn_webhook_save">Guardar webhook</string>
+    <string name="webhook_saved_toast">Webhook guardado</string>
+    <string name="btn_webhook_test">Probar conexión</string>
 </resources>

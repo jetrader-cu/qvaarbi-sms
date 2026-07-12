@@ -83,17 +83,33 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
 
         String message = config.prepareMessage(sender, content, slotName, timeStamp);
 
+        // Webhook global (spec REQ-007): una regla sin URL/secret propios hereda el
+        // par configurado una sola vez en Ajustes. Firmar en cuanto haya secret
+        // efectivo (el panel QvaArbi exige firma), sin obligar al toggle per-regla.
+        String effectiveUrl = WebhookGlobal.resolveUrl(this.context, config.getUrl());
+        String effectiveSecret =
+                WebhookGlobal.resolveSecret(this.context, config.getSignHmacSha256Secret());
+        boolean effectiveSign =
+                config.getSignHmacSha256() || (effectiveSecret != null && !effectiveSecret.isEmpty());
+
+        // Registra el SMS como pendiente ANTES de encolar, para que el registro exista
+        // aunque la primera entrega sea inmediata (spec REQ-002). logKey correlaciona
+        // todos los reintentos con esta misma entrada.
+        String logKey = MessageLog.record(this.context, config.getKey(), config.getSender(),
+                sender, content);
+
         Data data = new Data.Builder()
-                .putString(RequestWorker.DATA_URL, config.getUrl())
+                .putString(RequestWorker.DATA_URL, effectiveUrl)
                 .putString(RequestWorker.DATA_TEXT, message)
                 .putString(RequestWorker.DATA_HEADERS, config.getHeaders())
                 .putBoolean(RequestWorker.DATA_IGNORE_SSL, config.getIgnoreSsl())
                 .putBoolean(RequestWorker.DATA_CHUNKED_MODE, config.getChunkedMode())
                 .putInt(RequestWorker.DATA_MAX_RETRIES, config.getRetriesNumber())
-                .putBoolean(RequestWorker.DATA_SIGN_HMAC_SHA256, config.getSignHmacSha256())
-                .putString(RequestWorker.DATA_SIGN_HMAC_SHA256_SECRET, config.getSignHmacSha256Secret())
+                .putBoolean(RequestWorker.DATA_SIGN_HMAC_SHA256, effectiveSign)
+                .putString(RequestWorker.DATA_SIGN_HMAC_SHA256_SECRET, effectiveSecret)
                 .putBoolean(RequestWorker.DATA_STORE_FAILED, config.getStoreFailed())
                 .putBoolean(RequestWorker.DATA_LOCAL_MODE, config.getLocalMode())
+                .putString(RequestWorker.DATA_LOG_KEY, logKey)
                 .build();
 
         RequestWorker.enqueue(this.context, data);

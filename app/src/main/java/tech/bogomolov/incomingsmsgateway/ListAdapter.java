@@ -46,7 +46,14 @@ public class ListAdapter extends ArrayAdapter<ForwardingConfig> {
         sender.setText(senderText.equals(asterisk) ? any : senderText);
 
         TextView url = row.findViewById(R.id.text_url);
-        url.setText(config.getUrl());
+        // GUD-001 / AC-005: una regla sin URL propia hereda el webhook global;
+        // mostrar el string descriptivo en lugar de una celda vacía.
+        String urlText = config.getUrl();
+        if (urlText == null || urlText.isEmpty()) {
+            url.setText(context.getString(R.string.url_inherits_global));
+        } else {
+            url.setText(urlText);
+        }
 
         SwitchCompat switchSmsOnOff = row.findViewById(R.id.switch_sms_on_off);
         // Detach any listener a recycled row carries before syncing the state,

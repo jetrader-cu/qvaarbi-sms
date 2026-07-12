@@ -5,9 +5,11 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.database.DataSetObserver;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -35,6 +37,8 @@ public class MainActivity extends AppCompatActivity {
 
     private Context context;
     private ListAdapter listAdapter;
+    // El chequeo de update corre una vez por proceso (ver maybeCheckUpdate).
+    private boolean updateChecked = false;
 
     private static final int PERMISSION_CODE = 0;
 
@@ -42,6 +46,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Siembra las 3 reglas bancarias predefinidas la primera vez (REQ-001/005).
+        // Corre antes de la comprobación de permisos, así las reglas existen aunque
+        // el usuario aún no haya concedido el permiso SMS.
+        TemplateSeeder.seedIfNeeded(this);
 
         ArrayList<String> permissions = new ArrayList<>();
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_SMS) != PackageManager.PERMISSION_GRANTED) {
@@ -61,6 +70,10 @@ public class MainActivity extends AppCompatActivity {
         } else {
             ActivityCompat.requestPermissions(this, permissions.toArray(new String[0]), PERMISSION_CODE);
         }
+
+        // Programa el chequeo diario de actualizaciones en background (spec REQ-008).
+        // Idempotente; el propio worker respeta el toggle de auto-update.
+        UpdateCheckWorker.schedule(this);
     }
 
     @Override
@@ -104,6 +117,82 @@ public class MainActivity extends AppCompatActivity {
             listAdapter.clear();
             listAdapter.addAll(ForwardingConfig.getAll(this));
         }
+        // El heartbeat y las entregas actualizan el estado en segundo plano, así que
+        // refresca el banner cada vez que la pantalla vuelve al frente (spec REQ-009).
+        updateStatusBanner();
+        // Chequeo de actualización al abrir (spec REQ-007/008), una vez por sesión.
+        maybeCheckUpdate();
+    }
+
+    // Consulta el manifest en background (si el toggle está ON) y, si hay versión
+    // nueva, ofrece actualizar. Se ejecuta una sola vez por proceso para no repetir
+    // el diálogo en cada onResume.
+    private void maybeCheckUpdate() {
+        if (updateChecked || !UpdateSettings.isAutoCheckEnabled(this)) {
+            return;
+        }
+        updateChecked = true;
+        new Thread(() -> {
+            UpdateManifest manifest = UpdateChecker.fetch(this);
+            if (UpdateChecker.hasUpdate(manifest)) {
+                runOnUiThread(() -> showUpdateDialog(manifest));
+            }
+        }).start();
+    }
+
+    // Diálogo de actualización: "Actualizar" abre el APK en el navegador (REQ-010),
+    // sin permisos de instalación.
+    private void showUpdateDialog(UpdateManifest manifest) {
+        if (isFinishing()) {
+            return;
+        }
+        String message = manifest.notes == null || manifest.notes.isEmpty()
+                ? getString(R.string.update_available_message_short, manifest.versionName)
+                : getString(R.string.update_available_message, manifest.versionName, manifest.notes);
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.update_available_title)
+                .setMessage(message)
+                .setPositiveButton(R.string.btn_update_now,
+                        (d, w) -> openUrl(manifest.apkUrl))
+                .setNegativeButton(R.string.btn_update_later, null)
+                .show();
+    }
+
+    private void openUrl(String url) {
+        try {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+        } catch (Exception e) {
+            Log.e("SmsGateway", "open url failed: " + e);
+        }
+    }
+
+    // Pinta el banner de conexión con QvaArbi a partir del último evento conocido
+    // (heartbeat o entrega). Verde = OK, rojo = fallo con motivo, oculto si aún no
+    // hay actividad — no queremos alarmar antes del primer ping.
+    private void updateStatusBanner() {
+        TextView banner = findViewById(R.id.status_banner);
+        if (banner == null) {
+            return;
+        }
+        ConnectionStatus status = ConnectionStatus.load(this);
+        if (ConnectionStatus.STATE_UNKNOWN.equals(status.state)) {
+            banner.setVisibility(View.GONE);
+            return;
+        }
+
+        CharSequence when = DateUtils.getRelativeTimeSpanString(status.at);
+        String text;
+        int color;
+        if (ConnectionStatus.STATE_OK.equals(status.state)) {
+            text = getString(R.string.status_connected, when);
+            color = ContextCompat.getColor(this, R.color.colorPrimary);
+        } else {
+            text = getString(R.string.status_error, status.detail, when);
+            color = ContextCompat.getColor(this, R.color.colorDanger);
+        }
+        banner.setText(text);
+        banner.setBackgroundColor(color);
+        banner.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -141,51 +230,18 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (id == R.id.action_bar_syslogs) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(context);
-            View view = getLayoutInflater().inflate(R.layout.syslogs, null);
+            // El "Registro" es ahora el historial persistente de mensajes reenviados
+            // (MessageLogActivity), no un volcado de logcat. Lanzarlo por Intent evita
+            // el NPE del antiguo AlertDialog.Builder(context): `context` sólo se asigna
+            // en showList(), que no corre hasta conceder el permiso SMS — abrir el
+            // Registro sin permiso crasheaba (BUG-001 / AC-001).
+            startActivity(new Intent(this, MessageLogActivity.class));
+            return true;
+        }
 
-            String logs = "";
-            try {
-                String[] command = new String[]{
-                        "logcat", "-d", "*:E", "-m", "1000",
-                        "|", "grep", "tech.bogomolov.incomingsmsgateway"};
-                Process process = Runtime.getRuntime().exec(command);
-
-                BufferedReader bufferedReader = new BufferedReader(
-                        new InputStreamReader(process.getInputStream()));
-
-                String line;
-                while ((line = bufferedReader.readLine()) != null) {
-                    logs += line + "\n";
-                }
-            } catch (IOException ex) {
-                logs = "getLog failed";
-            }
-
-            TextView logsTextContainer = view.findViewById(R.id.syslogs_text);
-            logsTextContainer.setText(logs);
-
-            TextView version = view.findViewById(R.id.syslogs_version);
-            version.setText("v" + BuildConfig.VERSION_NAME);
-
-            builder.setView(view);
-            builder.setNegativeButton(R.string.btn_close, null);
-            builder.setNeutralButton(R.string.btn_clear, null);
-
-            final AlertDialog dialog = builder.show();
-            Objects.requireNonNull(dialog.getWindow())
-                    .setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-
-            dialog.getButton(AlertDialog.BUTTON_NEUTRAL)
-                    .setOnClickListener(view1 -> {
-                        String[] command = new String[]{"logcat", "-c"};
-                        try {
-                            Runtime.getRuntime().exec(command);
-                        } catch (IOException e) {
-                            Log.e("SmsGateway", "log clear error: " + e);
-                        }
-                        dialog.cancel();
-                    });
+        if (id == R.id.action_bar_help) {
+            startActivity(new Intent(this, HelpActivity.class));
+            return true;
         }
 
         return super.onOptionsItemSelected(item);

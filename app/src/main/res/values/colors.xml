@@ -5,6 +5,7 @@
     <color name="colorPrimary">#34D399</color>
     <color name="colorAccent">#34D399</color>
     <color name="colorDanger">#F87171</color>
+    <color name="colorWarning">#FBBF24</color>
     <color name="colorSurface">#0D1420</color>
     <color name="colorBackground">#050609</color>
     <color name="colorStatusBar">#050609</color>

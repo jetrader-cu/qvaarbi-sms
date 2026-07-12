@@ -15,6 +15,83 @@
         android:paddingRight="@dimen/spacing_medium"
         android:paddingBottom="@dimen/spacing_medium">
 
+        <!-- Webhook global de QvaArbi: un solo par URL + secret para todas las reglas -->
+        <TextView
+            style="@style/AppTheme.SectionHeader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/label_webhook_section" />
+
+        <TextView
+            style="@style/AppTheme.HelperText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:text="@string/webhook_info" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/AppTheme.TextInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:hint="@string/label_webhook_url"
+            app:helperText="@string/input_url">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/input_webhook_url"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textUri" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/AppTheme.TextInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:hint="@string/hint_webhook_secret">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/input_webhook_secret"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:layout_marginBottom="@dimen/spacing_medium"
+            android:gravity="end"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_webhook_test"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_webhook_test" />
+
+            <Button
+                android:id="@+id/btn_webhook_save"
+                style="@style/Widget.MaterialComponents.Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_small"
+                android:layout_marginLeft="@dimen/spacing_small"
+                android:text="@string/btn_webhook_save" />
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="@dimen/spacing_medium"
+            android:background="?android:attr/listDivider" />
+
         <TextView
             style="@style/AppTheme.SectionHeader"
             android:layout_width="match_parent"
@@ -91,6 +168,50 @@
                 android:layout_marginStart="@dimen/spacing_small"
                 android:layout_marginLeft="@dimen/spacing_small"
                 android:text="@string/btn_save" />
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="@dimen/spacing_medium"
+            android:background="?android:attr/listDivider" />
+
+        <TextView
+            style="@style/AppTheme.SectionHeader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/label_updates_section" />
+
+        <TextView
+            style="@style/AppTheme.HelperText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:text="@string/updates_info" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/input_auto_update"
+            style="@style/AppTheme.SwitchRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:text="@string/label_auto_update" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:layout_marginBottom="@dimen/spacing_medium"
+            android:gravity="end"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_check_updates"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_check_updates" />
 
         </LinearLayout>
 

@@ -205,15 +205,20 @@ public class ForwardingConfigDialog {
 
         final EditText urlInput = view.findViewById(R.id.input_url);
         String url = urlInput.getText().toString();
+        // La URL por-regla es opcional cuando hay un webhook global configurado
+        // (spec REQ-007): la regla heredará esa URL. Sólo se exige si no hay global.
         if (TextUtils.isEmpty(url)) {
-            urlInput.setError(context.getString(R.string.error_empty_url));
-            return null;
-        }
-        try {
-            new URL(url);
-        } catch (MalformedURLException e) {
-            urlInput.setError(context.getString(R.string.error_wrong_url));
-            return null;
+            if (!WebhookGlobal.load(context).isConfigured()) {
+                urlInput.setError(context.getString(R.string.error_empty_url));
+                return null;
+            }
+        } else {
+            try {
+                new URL(url);
+            } catch (MalformedURLException e) {
+                urlInput.setError(context.getString(R.string.error_wrong_url));
+                return null;
+            }
         }
 
         Spinner simSlotSelector = (Spinner) view.findViewById(R.id.input_sim_slot);
