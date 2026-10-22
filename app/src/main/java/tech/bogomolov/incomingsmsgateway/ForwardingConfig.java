@@ -426,7 +426,10 @@ public class ForwardingConfig {
             String value;
             switch (placeholder) {
                 case "from":
-                    value = from;
+                    // Escapar como %text%: un remitente con comillas o barra
+                    // invertida rompería el JSON del cuerpo (F10). El valor va
+                    // dentro de comillas en la plantilla por defecto.
+                    value = StringEscapeUtils.escapeJson(from);
                     break;
                 case "sentStamp":
                     value = arg == null ? String.valueOf(timeStamp)

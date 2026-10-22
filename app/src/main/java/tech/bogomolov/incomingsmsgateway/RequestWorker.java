@@ -98,7 +98,7 @@ public class RequestWorker extends Worker {
         // unsigned instead: the endpoint's auth rejection stays visible in the
         // syslog via the logged response code.
         if (signHmacSha256 && signHmacSha256Secret != null && !signHmacSha256Secret.isEmpty()) {
-            request.setSignatureHeader(signHmacSha256Secret, text);
+            request.setSignatureHeaderV2(signHmacSha256Secret, text);
         } else if (signHmacSha256) {
             Log.e("RequestWorker", "HMAC signing enabled but no secret stored; sending unsigned");
         }

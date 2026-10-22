@@ -116,6 +116,26 @@ public class Request {
         }
     }
 
+    /**
+     * Firma v2 con ventana anti-replay (F9): HMAC sobre `body + timestamp` y los
+     * headers X-Timestamp/X-Nonce. El backend acepta esta variante (la misma de
+     * capcom6/SMSGate) y rechaza un timestamp fuera de ±300 s, así que reenviar
+     * una captura vieja ya no vale. El nonce queda para la deduplicación futura;
+     * hoy la unicidad la da la hora del SMSC + texto en el servidor.
+     */
+    public void setSignatureHeaderV2(@NonNull String secret, @NonNull String body) {
+        String timestamp = String.valueOf(System.currentTimeMillis() / 1000L);
+        String nonce = java.util.UUID.randomUUID().toString();
+        try {
+            this.connection.setRequestProperty("X-Timestamp", timestamp);
+            this.connection.setRequestProperty("X-Nonce", nonce);
+            this.connection.setRequestProperty(
+                    "X-Signature", computeHmacSha256Hex(secret, body + timestamp));
+        } catch (NoSuchAlgorithmException | InvalidKeyException | IllegalArgumentException e) {
+            Log.e("SmsGateway", "hmac v2 signature error: " + e);
+        }
+    }
+
 
     public void setIgnoreSsl(boolean ignoreSsl) {
         this.ignoreSsl = ignoreSsl;

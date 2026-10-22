@@ -339,4 +339,25 @@ public class ForwardingConfigPrepareMessageTest {
 
         assertEquals("battery=-1 power=unknown network=none", result);
     }
+
+    @Test
+    public void testEscapesJsonInSender() {
+        // F10: un remitente con comillas rompería el JSON del cuerpo si %from% no
+        // se escapa igual que %text%.
+        ForwardingConfig config = configWithTemplate("\"from\":\"%from%\"");
+
+        String result = config.prepareMessage("he\"llo", "x", "sim1", 0L);
+
+        assertEquals("\"from\":\"he\\\"llo\"", result);
+    }
+
+    @Test
+    public void testBackslashInSenderIsEscapedAndLiteral() {
+        ForwardingConfig config = configWithTemplate("[%from%]");
+
+        String result = config.prepareMessage("a\\b", "x", "sim1", 0L);
+
+        // escapeJson convierte la barra en "\\"; quoteReplacement la deja literal.
+        assertEquals("[a\\\\b]", result);
+    }
 }

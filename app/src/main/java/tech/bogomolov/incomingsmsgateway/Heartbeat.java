@@ -44,7 +44,7 @@ public class Heartbeat {
         Request request = new Request(url, BODY);
         request.setUseChunkedMode(false);
         if (secret != null && !secret.isEmpty()) {
-            request.setSignatureHeader(secret, BODY);
+            request.setSignatureHeaderV2(secret, BODY);
         }
 
         String result = request.execute();

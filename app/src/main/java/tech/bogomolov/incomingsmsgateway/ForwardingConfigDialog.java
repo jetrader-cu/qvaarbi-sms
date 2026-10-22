@@ -374,7 +374,7 @@ public class ForwardingConfigDialog {
             // whole app, not just the test request.
             String secret = config.getSignHmacSha256Secret();
             if (config.getSignHmacSha256() && secret != null && !secret.isEmpty()) {
-                request.setSignatureHeader(secret, payload);
+                request.setSignatureHeaderV2(secret, payload);
             }
             request.setIgnoreSsl(config.getIgnoreSsl());
             request.setUseChunkedMode(config.getChunkedMode());
